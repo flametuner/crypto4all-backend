@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@localhost:5432/dev?schema=prisma"
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  url       String   @unique
+  content   String  @unique
+  author    User     @relation(fields: [authorId], references: [id])
+  deposit   Deposit?
+  authorId  Int
+}
+
+model Deposit {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  token      String
+  network    String
+  address    String
+  blockchain String
+  funded     Boolean  @default(false)
+  message    String
+
+  post   Post @relation(fields: [postId], references: [id])
+  postId Int  @unique
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  userNameTwitter String? @unique
+  posts     Post[]
+}
