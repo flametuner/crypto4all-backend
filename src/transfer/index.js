@@ -1,52 +1,38 @@
-require('dotenv').config()
-const { API_URL_MUMBAI, PRIVATE_KEY_MUMBAI, MY_ADDRESS_MUMBAI } = process.env
-const { createAlchemyWeb3 } = require('@alch/alchemy-web3')
-const web3 = createAlchemyWeb3(API_URL_MUMBAI, { maxRetries: 0 })
+require("dotenv").config();
+
+const ethers = require("ethers");
+
+const provider = ethers.getDefaultProvider(process.env.API_URL_MUMBAI, {
+  infura: {
+    projectId: process.env.INFURA_PROJECT_ID,
+    projectSecret: process.env.INFURA_PROJECT_SECRET,
+  },
+});
+
+const signer = new ethers.Wallet(process.env.PRIVATE_KEY_MUMBAI, provider);
 
 const sendTransaction = async (address) => {
   try {
-    const nonce = await web3.eth.getTransactionCount(
-      MY_ADDRESS_MUMBAI,
-      'latest',
-    ) // nonce starts counting from 0
-    const transaction = {
-      from: MY_ADDRESS_MUMBAI,
-      to: address, // faucet address to return eth
-      gasLimit: 285000, 
-      gasPrice: await web3.eth.getGasPrice(),
-      value: web3.utils.toWei('0.05', 'gwei'),
-      nonce: (1 + nonce),
-      // optional data field to send message or execute smart contract
-    }
-    console.log('send transcation: ', JSON.stringify(transaction))
-
-    const signedTx = await web3.eth.accounts.signTransaction(
-      transaction,
-      PRIVATE_KEY_MUMBAI,
-    )
-
-    return await new Promise(async (resolve, reject) => {
-        await web3.eth.sendSignedTransaction(signedTx.rawTransaction, function(error, hash) {
-            if (!error) {
-                 console.log('🎉 The hash of your transaction is: ', 
-                 hash
-                 )
-            } else {
-                console.error(error)
-                resolve(false)
-            }
-            resolve(true)
-        })
+    const transaction = await signer.sendTransaction({
+      to: address,
+      value: 500000,
     });
+    const hash = transaction.hash;
+
+    await transaction.wait([(confirms = 1)]);
+
+    console.log("🎉 The hash of your transaction is: ", hash);
+
+    return true;
   } catch (error) {
     console.log(
-      '❗Something went wrong while submitting your transaction:',
-      error,
-    )
-    return false
+      "❗Something went wrong while submitting your transaction:",
+      error
+    );
+    return false;
   }
-}
+};
 
 module.exports = {
   sendTransaction,
-}
+};

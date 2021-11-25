@@ -1,6 +1,6 @@
 const {prisma} = require("../prisma");
-const { getTwitter } = require("../puppeteer");
 const { sendTransaction } = require('../transfer');
+const { getTweetData } = require("../twitter");
 
 const saveWithdraw = async(data) => {
     const user = await prisma.user.create({ data: {
@@ -26,7 +26,9 @@ const saveWithdraw = async(data) => {
 const checkTwitterHandler = async (args) => {
     if(!args.url) return "Ops!!!"
     console.log("url ", args.url)
-    const { userNameTwitter, address, content } = await getTwitter(args.url, "aucet funds into ")
+    const id = args.url.split("/").slice(-1)[0]
+    console.log("id", id)
+    const { userNameTwitter, address, content } = await getTweetData(id)
         const post = await prisma.post.findUnique({where: { content }})
         if (post) {
             return "já recuperou tokens com essa conta"
