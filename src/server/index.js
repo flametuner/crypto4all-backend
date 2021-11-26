@@ -21,9 +21,37 @@ const typeDefs = gql`
     campaignId: Int!
   }
   
+  type Deposit {
+    id: String
+    token:      String
+    network:    String
+    address:    String
+    blockchain: String
+    funded:     Boolean
+    message:    String
+    post:   Post
+  }
+
   type Post {
     id: Id
-    
+    url:       String  
+    content:   String 
+    deposit:   Deposit
+    author:    User   
+    campaign:  Campaign
+  }
+
+  type Campaign {
+    id: Id
+    token:     String
+    network:   String
+    blockchain:  String  
+    valuePerShare: Int
+    quantity:  Int
+    content:   String
+    published: Boolean
+    posts:  Post[]
+    creator: User
   }
 
   type User {
@@ -31,16 +59,20 @@ const typeDefs = gql`
     userNameTwitter: String
     email: String
     posts: Post[]
-    campaigns: Campaign
+    campaigns: Campaign[]
   }
 
   type Query {
     healthCheck: String
+    authenticate(email: String, password: String): String
   }
 
   type Mutation {
     checkTwitter(input: checkTwitterInput!): String
-    signup()
+    createCampaign(): Campaign
+    updateCampaign(): Campaign
+    campaigns(): Campaign[]
+    signup(): User
   }
 
 `;
