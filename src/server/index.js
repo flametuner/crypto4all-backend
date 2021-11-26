@@ -10,18 +10,39 @@ const resolvers = {
       healthCheck: (_, args, __) => "ok"
     },
     Mutation: {
-      checkTwitter: (_, args, __) => checkTwitterHandler(args),
+      checkTwitter: (_, args, __) => checkTwitterHandler(args?.input),
     },
 };
 
-const typeDefs = gql`
+const typeDefs = gql`  
+  input checkTwitterInput {
+    url: String!
+    address:  String!
+    campaignId: Int!
+  }
+  
+  type Post {
+    id: Id
+    
+  }
+
+  type User {
+    id: Id
+    userNameTwitter: String
+    email: String
+    posts: Post[]
+    campaigns: Campaign
+  }
+
   type Query {
     healthCheck: String
   }
 
   type Mutation {
-    checkTwitter(url: String): String
+    checkTwitter(input: checkTwitterInput!): String
+    signup()
   }
+
 `;
 
 const server = new ApolloServer({ typeDefs, resolvers });
