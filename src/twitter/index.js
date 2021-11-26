@@ -1,13 +1,10 @@
-const Twitter = require("twitter-v2");
+const { TwitterApi } = require("twitter-api-v2");
 
-var client = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-  bearer_token: process.env.TWITTER_BEARER_TOKEN,
-});
+const client = new TwitterApi(process.env.TWITTER_BEARER_TOKEN).v2.readOnly;
 
 const regex = /0x[a-fA-F0-9]{40}/;
 
+var nextExecution = new Date();
 /**
  * Get Tweet Data from a list of tweet IDs
  * @param {[string]} tweet_ids
@@ -16,31 +13,27 @@ const regex = /0x[a-fA-F0-9]{40}/;
  */
 async function getTweetData(tweet_ids) {
   const {
-    data: tweet,
-    errors,
+    data: tweets,
     includes,
-  } = await client.get("tweets", {
-    ids: tweet_ids,
+    errors,
+  } = await client.tweets(tweet_ids, {
     expansions: ["author_id"],
-    tweet: {
-      fields: ["created_at", "author_id", "text"],
-    },
-    user: {
-      fields: ["username"],
-    },
+    "tweet.fields": ["created_at", "author_id", "text"],
+    "user.fields": ["username"],
   });
 
   const success_dict = {};
   const error_list = [];
   if (errors) {
     console.log("Errors:", errors);
+    
     for (let error of errors) {
       error_list.push(error.value);
     }
   }
-  if (tweet) {
-    console.log("Tweets:", tweet);
-    const zipped = tweet.map(function (e, i) {
+  if (tweets) {
+    console.log("Tweets:", tweets);
+    const zipped = tweets.map(function (e, i) {
       return [e, includes.users[i]];
     });
     for (const [t, u] of zipped) {
