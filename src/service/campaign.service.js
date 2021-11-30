@@ -1,5 +1,9 @@
 const { prisma } = require('../prisma')
 
+const orderByDefault = {
+    valuePerShare: 'desc'
+}
+
 const createCampaign = async (args, { user }) => {
   if (!user) throw new Error('usuario não autenticado')
   const campaign = await prisma.campaign.create({
@@ -29,18 +33,31 @@ const updateCampaign = async (args, { user }) => {
   return campaign
 }
 
-const getUserCampaigns = (args, user) => {
-    return prisma.campaign.findMany({
-        where: {
-            creator: { id: user.id }
-        },
-        skip: args.skip,
-        
+const setDefaultFilters = ({ where, orderBy, skip, take, id }) => {
+    if(where.published === undefined) where.published = true
+    if(orderBy.valuePerShare === undefined) orderBy = 'desc'
+    if(skip === undefined) skip = 0
+    if(take === undefined) take = 20
+    return { where, orderBy, skip, take, id }
+}
+
+const getUserCampaigns = async (args, user) => {
+    args.where.creator = { id: user.id }
+    return await prisma.campaign.findMany({
+        ...args
+    })
+}
+
+const getAllCampaigns = async (args) => {
+    return await prisma.campaign.findMany({
+        ...args
     })
 }
 
 const getCampaigns = async (args, { user }) => {
-
+    args = setDefaultFilters(args.input)
+    if(user) return await getUserCampaigns(args, user)
+    return await getAllCampaigns(args)
 }
 
 

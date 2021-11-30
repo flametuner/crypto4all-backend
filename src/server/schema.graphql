@@ -21,6 +21,33 @@ input UpdateCampaignInput {
   contentsToValidation: [String!]!
 }
 
+enum SorterEnum {
+  desc
+  asc
+} 
+
+input ContainsFilterInput {
+  contains: String!
+}
+
+input CampaignWhereInput {
+  id: Int
+  title: ContainsFilterInput
+  published: Boolean
+}
+
+input CampaignOrderByInput {
+  valuePerShare: SorterEnum
+}
+
+input CampaignFilterInput {
+  id: Int
+  where: CampaignWhereInput
+  orderBy: CampaignOrderByInput
+  skip: Int
+  take: Int
+}
+
 type Deposit {
   id: Int
   token: String
@@ -83,7 +110,7 @@ type User {
 type Query {
   healthCheck: String
   authenticate(email: String, password: String): String
-  campaigns: [Campaign!]!
+  campaigns(input: CampaignFilterInput): [Campaign!]!
 }
 
 type Mutation {

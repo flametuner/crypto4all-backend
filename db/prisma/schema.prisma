@@ -46,8 +46,8 @@ model User {
   updatedAt  DateTime @updatedAt
   userNameTwitter String? @unique
 
-  email String @unique
-  password String
+  email String? @unique
+  password String?
 
   posts     Post[]
   campaigns Campaign[]
@@ -65,7 +65,7 @@ model Campaign {
   tokenAddress     String?
   network   String?
   blockchain  String?  
-  valuePerShare Int?
+  valuePerShare Do?
   totalValue  Int?
   // deve ser setado pela listener do smart contract
   contentsToValidation String[]
