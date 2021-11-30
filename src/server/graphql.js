@@ -1,4 +1,3 @@
-const { gql } = require('apollo-server');
 
 const { checkTwitterHandler } = require('../handler');
 const userService = require("../service/user.service")
@@ -16,76 +15,13 @@ const resolvers = {
       campaigns: (_, args, __) => campaignService.getCampaigns(args),
     },
     Mutation: {
-      checkTwitter: (_, args, __) => checkTwitterHandler(args?.input),
+      checkTwitter: (_, args, __) => checkTwitterHandler(args),
       signup: (_, args, __) => userService.createUser(args),
-      createCampaign: (_, args, __) => campaignService.createCampaign(args),
-      updateCampaign: (_, args, __) => campaignService.updateCampaign(args),
+      createCampaign: (_, args, context) => campaignService.createCampaign(args, context),
+      updateCampaign: (_, args, context) => campaignService.updateCampaign(args, context),
     },
 };
 
-const typeDefs = gql`  
-  input checkTwitterInput {
-    url: String!
-    address:  String!
-    campaignId: Int!
-  }
-  
-  type Deposit {
-    id: String
-    token:      String
-    network:    String
-    address:    String
-    blockchain: String
-    funded:     Boolean
-    message:    String
-    post:   Post
-  }
-
-  type Post {
-    id: Id
-    url:       String  
-    content:   String 
-    deposit:   Deposit
-    author:    User   
-    campaign:  Campaign
-  }
-
-  type Campaign {
-    id: Id
-    token:     String
-    network:   String
-    blockchain:  String  
-    valuePerShare: Int
-    quantity:  Int
-    content:   String
-    published: Boolean
-    posts:  Post[]
-    creator: User
-  }
-
-  type User {
-    id: Id
-    userNameTwitter: String
-    email: String
-    posts: Post[]
-    campaigns: Campaign[]
-  }
-
-  type Query {
-    healthCheck: String
-    authenticate(email: String, password: String): String
-    campaigns(): Campaign[]
-  }
-
-  type Mutation {
-    checkTwitter(input: checkTwitterInput!): String
-    createCampaign(): Campaign
-    updateCampaign(): Campaign
-    signup(email: String, password: String): User
-  }
-`;
-
 module.exports = {
-    resolvers,
-    typeDefs
+    resolvers
 }

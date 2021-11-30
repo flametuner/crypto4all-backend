@@ -1,0 +1,95 @@
+scalar DateTime
+
+input checkTwitterInput {
+  url: String!
+  address: String!
+  campaignId: Int!
+}
+
+input CreateCampaignInput {
+  title: String!
+  description: String!
+  content: String!
+  contentsToValidation: [String!]!
+}
+
+input UpdateCampaignInput {
+  id: Int!
+  title: String!
+  description: String!
+  content: String
+  contentsToValidation: [String!]!
+}
+
+type Deposit {
+  id: Int
+  token: String
+  network: String
+  address: String
+  blockchain: String
+  funded: Boolean
+  message: String
+  post: Post
+
+  createdAt:  DateTime 
+  updatedAt:  DateTime
+}
+
+type Post {
+  id: Int
+  url: String
+  content: String
+  deposit: Deposit
+  author: User
+  campaign: Campaign
+
+  createdAt:  DateTime 
+  updatedAt:  DateTime
+}
+
+type Campaign {
+  id: Int
+  title: String
+  description: String
+  tokenName:   String
+  tokenSymbol: String
+  tokenAddress:  String
+  network:   String
+  blockchain: String
+  valuePerShare: Int
+  totalValue: Int
+  quantity: Int
+  content: String
+  contentsToValidation: [String!]!
+  published: Boolean
+  posts: [Post!]!
+  creator: User
+
+  createdAt:  DateTime 
+  updatedAt:  DateTime
+}
+
+type User {
+  id: Int
+  userNameTwitter: String
+  email: String
+  posts: [Post!]!
+  campaigns: [Campaign!]!
+
+  createdAt:  DateTime 
+  updatedAt:  DateTime
+}
+
+type Query {
+  healthCheck: String
+  authenticate(email: String, password: String): String
+  campaigns: [Campaign!]!
+}
+
+type Mutation {
+  checkTwitter(input: checkTwitterInput!): String
+  signup(email: String!, password: String!): String
+
+  createCampaign(input: CreateCampaignInput!): Campaign
+  updateCampaign(input: UpdateCampaignInput!): Campaign
+}

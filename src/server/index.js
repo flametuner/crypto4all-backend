@@ -1,7 +1,17 @@
-const { ApolloServer } = require('apollo-server');
-const { typeDefs, resolvers } = require('./graphql') 
+const { ApolloServer, gql } = require('apollo-server');
+const { resolvers } = require('./graphql') 
+const fs = require('fs')
+const path = require('path')
+const userService = require('../service/user.service')
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const schema = fs.readFileSync(path.join(__dirname, 'schema.graphql'))
+const typeDefs = gql`${schema}`;
+
+const context = ({ req }) => ({
+  user: userService.getUserFromToken(req.headers.authorization)
+})
+
+const server = new ApolloServer({ typeDefs, resolvers, context });
 
 // The `listen` method launches a web server.
 server.listen().then(({ url }) => {
