@@ -57,6 +57,3 @@ deploy:
     - gcloud auth activate-service-account --key-file gcloud-service-key.json 
     - gcloud run deploy $SERVICE_NAME --image gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME --region=us-central1 --platform managed --allow-unauthenticated 
     
-    
-    gcloud run deploy cripto-for-all-backend-staging --image $DOCKER_IMAGE_NAME --region=us-central1 --platform managed --allow-unauthenticated 
-    
