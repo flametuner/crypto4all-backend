@@ -2,7 +2,7 @@ default:
   image: node:16
 
 variables:
-  DOCKER_IMAGE_NAME: gcr.io/criptoforall/cripto-for-all-backend-staging
+  DOCKER_IMAGE_NAME: us.gcr.io/criptoforall/cripto-for-all-backend-staging
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
   SERVICE_NAME: cripto-for-all-backend-staging
@@ -23,7 +23,7 @@ prisma-generate:
   stage: build-prisma-and-migrate
   cache:
     <<: *global_cache
-    policy: pull-push
+    policy: push
   script: 
     - yarn install
     - cd db/prisma 
@@ -56,3 +56,7 @@ deploy:
     - cat $GCP_KEY > gcloud-service-key.json
     - gcloud auth activate-service-account --key-file gcloud-service-key.json 
     - gcloud run deploy $SERVICE_NAME --image gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME --region=us-central1 --platform managed --allow-unauthenticated 
+    
+    
+    gcloud run deploy cripto-for-all-backend-staging --image $DOCKER_IMAGE_NAME --region=us-central1 --platform managed --allow-unauthenticated 
+    
