@@ -53,6 +53,6 @@ deploy:
   stage: deploy
   image: google/cloud-sdk:latest
   script:
-    - echo $GCP_KEY > gcloud-service-key.json
+    - cat $GCP_KEY > gcloud-service-key.json
     - gcloud auth activate-service-account --key-file gcloud-service-key.json 
     - gcloud run deploy $SERVICE_NAME --image gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME --region=us-east4 --platform managed --allow-unauthenticated 
