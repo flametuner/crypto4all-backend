@@ -83,9 +83,9 @@ type Campaign {
   tokenAddress:  String
   network:   String
   blockchain: String
-  valuePerShare: Int
-  totalValue: Int
-  quantity: Int
+  valuePerShare: Float
+  totalValue: Float
+  quantity: Float
   content: String
   contentsToValidation: [String!]!
   published: Boolean

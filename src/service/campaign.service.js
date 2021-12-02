@@ -1,7 +1,7 @@
 const { prisma } = require('../prisma')
 
 const orderByDefault = {
-    valuePerShare: 'desc'
+  valuePerShare: 'desc',
 }
 
 const createCampaign = async (args, { user }) => {
@@ -28,38 +28,48 @@ const updateCampaign = async (args, { user }) => {
       ...args.input,
     },
     where: { id: isUserCampaign[0].id },
-    include: { creator: true }
+    include: { creator: true },
   })
   return campaign
 }
 
-const setDefaultFilters = ({ where, orderBy, skip, take, id }) => {
-    if(where.published === undefined) where.published = true
-    if(orderBy.valuePerShare === undefined) orderBy = 'desc'
-    if(skip === undefined) skip = 0
-    if(take === undefined) take = 20
-    return { where, orderBy, skip, take, id }
+const setDefaultFilters = (args) => {
+  if (args?.where === undefined) {
+    args = { ...args, where: { published: true } }
+  }
+  if (args.where.published === undefined) {
+    args.where = { ...args.where, published: true }
+  }
+  if (args?.orderBy === undefined) {
+    args = { ...args, orderBy: { valuePerShare: 'desc' } }
+  }
+  if (args.orderBy.valuePerShare === undefined) {
+    args.orderBy['valuePerShare'] === 'desc'
+  }
+  if (args.skip === undefined) args = { ...args, skip: 0 }
+  if (args.take === undefined) args = { ...args, take: 20 }
+  return args
 }
 
 const getUserCampaigns = async (args, user) => {
-    args.where.creator = { id: user.id }
-    return await prisma.campaign.findMany({
-        ...args
-    })
+  args.where.creator = { id: user.id }
+  return await prisma.campaign.findMany({
+    ...args,
+  })
 }
 
 const getAllCampaigns = async (args) => {
-    return await prisma.campaign.findMany({
-        ...args
-    })
+  return await prisma.campaign.findMany({
+    ...args,
+  })
 }
 
-const getCampaigns = async (args, { user }) => {
-    args = setDefaultFilters(args.input)
-    if(user) return await getUserCampaigns(args, user)
-    return await getAllCampaigns(args)
+const getCampaigns = async (args, context) => {
+  if(args?.input) args = { ...args.input }
+  args = setDefaultFilters(args)
+  if (context?.user) return await getUserCampaigns(args, context.user)
+  return await getAllCampaigns(args)
 }
-
 
 module.exports = {
   createCampaign,
