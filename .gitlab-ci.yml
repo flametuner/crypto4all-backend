@@ -59,7 +59,7 @@ deploy:
     - gcloud auth activate-service-account --key-file $GCP_KEY
     - gcloud auth configure-docker --quiet
     - docker image pull $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA
-    - gcloud config set project $GCP_PROJECT
+    - gcloud config set project $GCP_PROJECT_ID
   script:
     - gcloud auth activate-service-account --key-file $GCP_KEY
     - gcloud run deploy $SERVICE_NAME --image $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA --region=$GCP_REGION --platform managed --allow-unauthenticated 
