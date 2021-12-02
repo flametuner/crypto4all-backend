@@ -53,6 +53,8 @@ dockerize:
 deploy:
   stage: deploy
   image: google/cloud-sdk:latest
+  services:
+    - docker:dind
   before_script:
     - gcloud auth activate-service-account --key-file $GCP_KEY
     - gcloud auth configure-docker --quiet
