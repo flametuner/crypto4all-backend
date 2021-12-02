@@ -30,7 +30,7 @@ prisma-generate:
     - rm .env
     - echo "$PRISMA_ENV_STAGING" > .env
     - npx prisma generate
-    - npx prisma migrate
+    - npx prisma db push
 
 dockerize:
   stage: build-docker
