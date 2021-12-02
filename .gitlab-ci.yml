@@ -55,5 +55,5 @@ deploy:
   script:
     - cat $GCP_KEY > gcloud-service-key.json
     - gcloud auth activate-service-account --key-file gcloud-service-key.json 
-    - gcloud run deploy $SERVICE_NAME --image gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME --region=us-central1 --platform managed --allow-unauthenticated 
+    - gcloud run deploy $SERVICE_NAME --image $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
     
