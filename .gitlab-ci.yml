@@ -2,7 +2,7 @@ default:
   image: node:16
 
 variables:
-  DOCKER_IMAGE_NAME: gcr.io/cripto-for-all/cripto-for-all-backend
+  DOCKER_IMAGE_NAME: gcr.io/criptoforall/cripto-for-all-backend
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
   SERVICE_NAME: cripto-for-all-backend
