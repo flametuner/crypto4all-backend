@@ -65,7 +65,7 @@ model Campaign {
   tokenAddress     String?
   network   String?
   blockchain  String?  
-  valuePerShare Do?
+  valuePerShare Decimal?
   totalValue  Int?
   // deve ser setado pela listener do smart contract
   contentsToValidation String[]
