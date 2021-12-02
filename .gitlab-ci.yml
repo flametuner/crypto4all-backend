@@ -13,6 +13,7 @@ cache: &global_cache
   key: $CI_COMMIT_REF_SLUG
   paths:
     - node_modules/
+    - db/
 
 stages:
   - build-prisma-and-migrate
@@ -29,7 +30,7 @@ prisma-generate:
     - yarn install
     - cd db/prisma 
     - rm .env
-    - echo "$PRISMA_ENV_STAGING" > .env
+    - cat $PRISMA_ENV_STAGING > .env
     - npx prisma generate
     - npx prisma migrate deploy
 
