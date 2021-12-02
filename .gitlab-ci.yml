@@ -1,5 +1,5 @@
 default:
-  image: node:14
+  image: node:16
 
 variables:
   DOCKER_IMAGE_NAME: gcr.io/cripto-for-all/cripto-for-all-backend
@@ -30,7 +30,7 @@ prisma-generate:
     - rm .env
     - echo "$PRISMA_ENV_STAGING" > .env
     - npx prisma generate
-    - npx prisma db push
+    - npx prisma migrate deploy
 
 dockerize:
   stage: build-docker
