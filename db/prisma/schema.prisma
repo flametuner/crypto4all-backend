@@ -16,9 +16,13 @@ model Post {
   updatedAt DateTime @updatedAt
   url       String   @unique
   content   String  @unique
-  author    User     @relation(fields: [authorId], references: [id])
+
   deposit   Deposit?
+  author    User     @relation(fields: [authorId], references: [id])
+  campaign  Campaign @relation(fields: [campaignId], references: [id])
+
   authorId  Int
+  campaignId Int
 }
 
 model Deposit {
@@ -38,6 +42,38 @@ model Deposit {
 
 model User {
   id        Int     @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   userNameTwitter String? @unique
+
+  email String? @unique
+  password String?
+
   posts     Post[]
+  campaigns Campaign[]
+}
+
+model Campaign {
+  id        Int     @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  title     String   @unique
+  description String?
+  // deve ser setado pela listener do smart contract
+  tokenName   String?
+  tokenSymbol String?
+  tokenAddress     String?
+  network   String?
+  blockchain  String?  
+  valuePerShare Decimal?
+  totalValue  Int?
+  // deve ser setado pela listener do smart contract
+  contentsToValidation String[]
+  content   String
+  published Boolean? @default(true)
+
+  posts  Post[]
+  creator User @relation(fields: [creatorId], references: [id])
+
+  creatorId Int
 }
