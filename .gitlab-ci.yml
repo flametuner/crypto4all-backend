@@ -7,6 +7,7 @@ variables:
   DOCKER_DRIVER: overlay2
   SERVICE_NAME: cripto-for-all-backend-staging
   GCP_PROJECT_ID: criptoforall
+  GCP_REGION: us-central1
 
 cache: &global_cache
   key: $CI_COMMIT_REF_SLUG
@@ -52,8 +53,16 @@ dockerize:
 deploy:
   stage: deploy
   image: google/cloud-sdk:latest
+  before_script:
+    - gcloud auth activate-service-account --key-file $GCP_KEY
+    - gcloud auth configure-docker --quiet
+    - docker image pull $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+    - gcloud config set project $GCP_PROJECT
   script:
-    - cat $GCP_KEY > gcloud-service-key.json
-    - gcloud auth activate-service-account --key-file gcloud-service-key.json 
-    - gcloud run deploy $SERVICE_NAME --image $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
+    - gcloud auth activate-service-account --key-file $GCP_KEY
+    - gcloud run deploy $SERVICE_NAME --image $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA --region=$GCP_REGION --platform managed --allow-unauthenticated 
+    - echo "ENVIRONMENT_URL=$(gcloud run services list --platform managed --region $GCP_REGION | grep $SERVICE_NAME | awk '{print $4}')"
+  environment:
+    name: staging
+    url: $ENVIRONMENT_URL
     
