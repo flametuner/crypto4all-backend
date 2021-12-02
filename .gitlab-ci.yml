@@ -1,0 +1,58 @@
+default:
+  image: node:14
+
+variables:
+  DOCKER_IMAGE_NAME: gcr.io/cripto-for-all/cripto-for-all-backend
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  SERVICE_NAME: cripto-for-all-backend
+  GCP_PROJECT_ID: criptoforall
+
+cache: &global_cache
+  key: $CI_COMMIT_REF_SLUG
+  paths:
+    - node_modules/
+
+stages:
+  - build-prisma-and-migrate
+  - build-docker
+  - deploy
+
+
+prisma-generate:
+  stage: build-prisma-and-migrate
+  cache:
+    <<: *global_cache
+    policy: pull-push
+  script: 
+    - yarn install
+    - cd db/prisma 
+    - rm .env
+    - echo "$PRISMA_ENV_STAGING" > .env
+    - npx prisma generate
+    - npx prisma migrate
+
+dockerize:
+  stage: build-docker
+  image: docker:stable
+  cache:
+    <<: *global_cache
+    policy: pull
+  tags:
+    - docker
+  services:
+    - docker:dind
+  before_script:
+    - cat $GCP_KEY | docker login -u _json_key --password-stdin https://gcr.io
+    - docker info
+  script:
+    - docker build --tag $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA .
+    - docker push $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+
+deploy:
+  stage: deploy
+  image: google/cloud-sdk:latest
+  script:
+    - echo $GCP_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json 
+    - gcloud run deploy $SERVICE_NAME --image gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME --region=us-east4 --platform managed --allow-unauthenticated 
