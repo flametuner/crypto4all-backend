@@ -21,6 +21,8 @@ stages:
   - deploy
 
 prisma-generate:
+  only:
+    - master
   stage: build-prisma-and-migrate
   cache:
     <<: *global_cache
@@ -34,6 +36,8 @@ prisma-generate:
     - npx prisma migrate deploy
 
 dockerize:
+  only:
+    - master
   stage: build-docker
   image: docker:stable
   cache:
@@ -51,6 +55,8 @@ dockerize:
     - docker push $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA
 
 deploy:
+  only:
+    - master
   stage: deploy
   image: google/cloud-sdk:latest
   services:

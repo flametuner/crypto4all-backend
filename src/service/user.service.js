@@ -24,10 +24,8 @@ const authenticate = async ({ email, password }) => {
 }
 
 const getUserFromToken = (jwtToken) => {
-  if(jwtToken) {
     const user = jwt.verify(jwtToken, process.env.JWT_SECRET)
     return user
-  }
 }
 
 module.exports = {

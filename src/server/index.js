@@ -8,7 +8,7 @@ const schema = fs.readFileSync(path.join(__dirname, 'schema.graphql'))
 const typeDefs = gql`${schema}`;
 
 const context = ({ req }) => ({
-  user: userService.getUserFromToken(req.headers.authorization)
+  user: req?.headers?.authorization ? userService.getUserFromToken(req.headers.authorization) : undefined
 })
 
 const server = new ApolloServer({ typeDefs, resolvers, context });
