@@ -35,6 +35,7 @@ model Deposit {
   blockchain String
   funded     Boolean  @default(false)
   message    String
+  value      Decimal
 
   post   Post @relation(fields: [postId], references: [id])
   postId Int  @unique
