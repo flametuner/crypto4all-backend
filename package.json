@@ -4,6 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "generate-types": "typechain --target=ethers-v5 'abi/*.json'",
+    "postinstall": "yarn generate-types",
     "start": "node src/server/index.js"
   },
   "dependencies": {
@@ -20,6 +22,8 @@
     "typescript": "^4.4.4"
   },
   "devDependencies": {
-    "prisma": "^3.4.0"
+    "@typechain/ethers-v5": "^8.0.5",
+    "prisma": "^3.4.0",
+    "typechain": "^6.0.5"
   }
 }
