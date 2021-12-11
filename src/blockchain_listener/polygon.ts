@@ -17,7 +17,7 @@ const campaignResumedFilter = crypto4All.filters.CampaignResumed()
 const campaignValuePerShareUpdatedFilter = crypto4All.filters.CampaignValuePerShareUpdated()
 const campaignWithdrawnFilter = crypto4All.filters.CampaignWithdrawn()
 const userFundedFilter = crypto4All.filters.UserFunded()
-const blockchain = 'POGYLON'
+const blockchain = 'POLYGON'
 const network = process.env.ENV === 'dev' ? 'mumbai' : 'mainnet'
 
 async function listenForEvents() {
