@@ -31,6 +31,8 @@ const saveWithdraw = async (data) => {
 const checkTwitterHandler = async ({ input }) => {
   if (!input.url) return "Ops!!!";
   console.log("url ", input.url);
+  if (!input.address) return "Ops!!!"
+  
   const id = input.url.split("/").slice(-1)[0];
   console.log("id", id);
   const { success_dict } = await getTweetData([id]);
