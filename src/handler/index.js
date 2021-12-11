@@ -1,68 +1,88 @@
-const { prisma } = require("../prisma");
-const { sendTransaction } = require("../transfer");
-const { getTweetData } = require("../twitter");
+const { prisma } = require('../prisma')
+const { sendTransaction } = require('../transfer')
+const { getTweetData } = require('../twitter')
 
 const saveWithdraw = async (data) => {
-  const user = await prisma.user.create({
-    data: {
-      userNameTwitter: data.userNameTwitter,
-    },
-  });
+  let user = await prisma.user.findUnique({
+    where: { userNameTwitter: data.userNameTwitter },
+  })
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        userNameTwitter: data.userNameTwitter,
+      },
+    })
+  }
   const post = await prisma.post.create({
     data: {
       url: data.url,
       content: data.content,
-      authorId: user.id,
+      author: { connect: { id: user.id } },
+      campaign: {connect: {id: data.campaign.id }}
     },
-  });
+  })
   await prisma.deposit.create({
     data: {
-      token: "MATIC",
-      network: "MAINNET",
+      token: data.campaign.tokenName,
+      network: data.campaign.network,
       address: data.address,
-      blockchain: "POLYGON",
-      funded: data.isSendTransaction,
-      message: "PAY PAY",
+      blockchain: data.campaign.blockchain,
+      value: data.campaign.valuePerShare,
+      message: 'PAY PAY',
       post: { connect: { id: post.id } },
     },
-  });
-};
+  })
+}
 
 const checkTwitterHandler = async ({ input }) => {
-  if (!input.url) return "Ops!!!";
-  console.log("url ", input.url);
-  if (!input.address) return "Ops!!!"
-  
-  const id = input.url.split("/").slice(-1)[0];
-  console.log("id", id);
-  const { success_dict } = await getTweetData([id]);
+  console.log(
+    `url ${input.url}`,
+    `address ${input.address}`,
+    ` campaignId ${input.campaignId}`,
+  )
+  if (!input.url) return 'Ops!!!'
+  if (!input.address) return 'Ops!!!'
+  if (!input.campaignId) return 'Ops!!!'
+  const campaign = await prisma.campaign.findUnique({
+    where: { id: input.campaignId },
+  })
+  if (!campaign) return 'Campaign not found!!!'
+
+  const id = input.url.split('/').slice(-1)[0]
+  console.log('id', id)
+  const { success_dict } = await getTweetData(
+    [id],
+    campaign.contentsToValidation,
+  )
 
   if (!success_dict[id]) {
-    return "There was an error processing your tweet";
+    return 'There was an error processing your tweet'
   }
 
-  const { userNameTwitter, address, content } = success_dict[id];
-  const post = await prisma.post.findUnique({ where: { content } });
+  const { userNameTwitter, content } = success_dict[id]
+  const post = await prisma.post.findUnique({ where: { content } })
   if (post) {
-    return "já recuperou tokens com essa conta";
+    return 'já recuperou tokens com essa conta'
   }
   const isFundedAddress = await prisma.deposit.findFirst({
-    where: { address },
-  });
+    where: { address: input.address },
+  })
   if (isFundedAddress) {
-    return "Esse address já sacou";
+    return 'Esse address já sacou'
   }
 
-  const isSendTransaction = await sendTransaction(address);
+  const isSendTransaction = await sendTransaction(input.address)
 
   await saveWithdraw({
     userNameTwitter,
-    address,
+    address: input.address,
     content,
-    url: args.url,
+    url: input.url,
     isSendTransaction,
-  });
-  return "pay pay my friend";
-};
+    campaignId: input.campaignId,
+    campaign,
+  })
+  return 'pay pay my friend'
+}
 
-module.exports = { checkTwitterHandler };
+module.exports = { checkTwitterHandler }
