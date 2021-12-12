@@ -6,7 +6,8 @@
   "scripts": {
     "generate-types": "typechain --target=ethers-v5 'abi/*.json'",
     "postinstall": "yarn generate-types",
-    "start": "node src/server/index.js"
+    "start": "node src/server/index.js",
+    "listener": "npx ts-node src/blockchain_listener/main.ts"
   },
   "dependencies": {
     "@prisma/client": "^3.4.0",
