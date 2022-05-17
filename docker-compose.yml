@@ -1,12 +1,23 @@
 version: '3.5'
 
 services:
-  postgres:
+  server:
+    build: .
+    command:  yarn start
+    links:
+      - "db:database"
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/crypto4all?schema=prisma
+    env_file:
+    - .env
+  db:
     container_name: postgres_container
-    image: postgres
+    image: postgres:13
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+    - "5432:5432"
     restart: unless-stopped

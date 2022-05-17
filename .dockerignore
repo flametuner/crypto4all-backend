@@ -1,2 +1,7 @@
-Dockerfile.yml
+Dockerfile
+.dockerignore
+node_modules
+.vscode
+types
 docker-compose.yml
+**/*/.env

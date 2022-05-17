@@ -5,9 +5,11 @@
   "license": "MIT",
   "scripts": {
     "generate-types": "typechain --target=ethers-v5 'abi/*.json'",
-    "postinstall": "yarn generate-types",
+    "generate-prisma": "prisma generate",
+    "postinstall": "yarn generate-types && yarn generate-prisma",
     "start": "node src/server/index.js",
-    "listener": "npx ts-node src/blockchain_listener/main.ts"
+    "listener": "npx ts-node src/blockchain_listener/main.ts",
+    "migrate:dev": "prisma migrate dev"
   },
   "dependencies": {
     "@prisma/client": "^3.4.0",

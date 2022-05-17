@@ -1,6 +1,18 @@
-FROM node:14
+FROM node:14-alpine
+
+RUN apk add dumb-init
 
 # Start the app
-WORKDIR /usr/src/app
+WORKDIR /app
+
+COPY package.json yarn.lock schema.prisma ./
+
+COPY abi/ ./abi
+
+RUN yarn install
+
 COPY . ./
-CMD [ "yarn", "start" ]
+
+ENV PORT=3000
+
+CMD [ "dumb-init", "yarn", "start" ]
