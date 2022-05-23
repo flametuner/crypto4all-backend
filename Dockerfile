@@ -1,18 +1,31 @@
-FROM node:14-alpine
+FROM node:14-alpine as deps
 
-RUN apk add dumb-init
-
-# Start the app
 WORKDIR /app
 
 COPY package.json yarn.lock schema.prisma ./
 
 COPY abi/ ./abi
 
-RUN yarn install
+RUN yarn install --frozen-lockfile --non-interactive
+
+FROM node:14-alpine as migration
+
+WORKDIR /app
+
+RUN apk add dumb-init
+
+COPY --from=deps /app ./
+
+CMD ["dumb-init", "yarn", "migrate:prod"]
+
+FROM node:14-alpine as app
+
+WORKDIR /app
+
+RUN apk add dumb-init
+
+COPY --from=deps /app/node_modules ./node_modules
 
 COPY . ./
-
-ENV PORT=3000
 
 CMD [ "dumb-init", "yarn", "start" ]
