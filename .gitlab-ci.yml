@@ -1,76 +1,51 @@
-default:
-  image: node:16
-
-variables:
-  DOCKER_IMAGE_NAME: us.gcr.io/criptoforall/cripto-for-all-backend-staging
-  DOCKER_HOST: tcp://docker:2375/
-  DOCKER_DRIVER: overlay2
-  SERVICE_NAME: cripto-for-all-backend-staging
-  GCP_PROJECT_ID: criptoforall
-  GCP_REGION: us-central1
-
-cache: &global_cache
-  key: $CI_COMMIT_REF_SLUG
-  paths:
-    - node_modules/
-    - db/
-
 stages:
-  - build-prisma-and-migrate
-  - build-docker
+  - test
+  - build
   - deploy
 
-prisma-generate:
-  only:
-    - main
-  stage: build-prisma-and-migrate
-  cache:
-    <<: *global_cache
-    policy: push
-  script: 
-    - yarn install
-    - cd db/prisma 
-    - rm .env
-    - cat $PRISMA_ENV_STAGING > .env
-    - npx prisma generate
-    - npx prisma migrate deploy
+variables:
+  DEV_BRANCH: dev
+  PROD_BRANCH: main
 
-dockerize:
-  only:
-    - main
-  stage: build-docker
-  image: docker:stable
-  cache:
-    <<: *global_cache
-    policy: pull
-  tags:
-    - docker
-  services:
-    - docker:dind
-  before_script:
-    - cat $GCP_KEY | docker login -u _json_key --password-stdin https://us.gcr.io
-    - docker info
-  script:
-    - docker build --tag $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA .
-    - docker push $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA
-
-deploy:
-  only:
-    - main
-  stage: deploy
-  image: google/cloud-sdk:latest
-  services:
-    - docker:dind
-  before_script:
-    - gcloud auth activate-service-account --key-file $GCP_KEY
-    - gcloud auth configure-docker --quiet
-    - docker image pull $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA
-    - gcloud config set project $GCP_PROJECT_ID
-  script:
-    - gcloud auth activate-service-account --key-file $GCP_KEY
-    - gcloud run deploy $SERVICE_NAME --image $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA --region=$GCP_REGION --platform managed --allow-unauthenticated 
-    - echo "ENVIRONMENT_URL=$(gcloud run services list --platform managed --region $GCP_REGION | grep $SERVICE_NAME | awk '{print $4}')"
+build:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: build
   environment:
-    name: staging
-    url: $ENVIRONMENT_URL
-    
+    name: $ENV_NAME
+    action: prepare
+  script:
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --target app
+      --destination "${CFA_REGISTRY}/backend:${CI_PIPELINE_IID}"
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --target migration
+      --destination "${CFA_REGISTRY}/migration:${CI_PIPELINE_IID}"
+    - echo "IMAGE_TAG=$CI_PIPELINE_IID" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+  rules:
+    - if: '$CI_COMMIT_REF_PROTECTED != "true"'
+      when: never
+    - if: "$CI_COMMIT_BRANCH == $DEV_BRANCH"
+      variables:
+        ENV_NAME: development
+      exists:
+        - Dockerfile
+    - if: "$CI_COMMIT_BRANCH == $PROD_BRANCH"
+      variables:
+        ENV_NAME: production
+      exists:
+        - Dockerfile
+      when: manual
+    - if: "$CI_COMMIT_REF_PROTECTED"
+      variables:
+        IMAGE_TAG: $CI_COMMIT_REF_SLUG-$CI_PIPELINE_IID
