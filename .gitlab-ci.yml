@@ -21,7 +21,6 @@ build:
       --cleanup
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --target app
       --destination "${CFA_REGISTRY}/backend:${CI_PIPELINE_IID}"
     - >-
       /kaniko/executor
