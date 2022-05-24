@@ -9,8 +9,8 @@
     "postinstall": "yarn generate-types && yarn generate-prisma",
     "start": "node src/server/index.js",
     "listener": "npx ts-node src/blockchain_listener/main.ts",
-    "migrate:dev": "prisma migrate dev",
-    "migrate:prod": "prisma migrate deploy"
+    "migrate:dev": "yarn prisma migrate dev",
+    "migrate:prod": "yarn prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^3.4.0",
