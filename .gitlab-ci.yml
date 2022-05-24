@@ -18,13 +18,17 @@ build:
   script:
     - >-
       /kaniko/executor
-      --cleanup
+      --cache
+      --skip-unused-stages
+      --target app
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${CFA_REGISTRY}/backend:${CI_PIPELINE_IID}"
     - >-
       /kaniko/executor
-      --cleanup
+      --cache
+      --skip-unused-stages
+      --target app
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --target migration
