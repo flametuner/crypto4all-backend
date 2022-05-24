@@ -28,6 +28,7 @@ build:
     - >-
       /kaniko/executor
       --cache
+      --cleanup
       --skip-unused-stages
       --target migration
       --context "${CI_PROJECT_DIR}"
