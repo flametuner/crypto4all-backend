@@ -29,10 +29,9 @@ build:
       /kaniko/executor
       --cache
       --skip-unused-stages
-      --target app
+      --target migration
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --target migration
       --destination "${CFA_REGISTRY}/migration:${CI_PIPELINE_IID}"
     - echo "IMAGE_TAG=$CI_PIPELINE_IID" >> build.env
   artifacts:
