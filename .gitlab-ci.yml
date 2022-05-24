@@ -1,6 +1,7 @@
 stages:
   - test
   - build
+  - migrate
   - deploy
 
 variables:
@@ -54,3 +55,34 @@ build:
     - if: "$CI_COMMIT_REF_PROTECTED"
       variables:
         IMAGE_TAG: $CI_COMMIT_REF_SLUG-$CI_PIPELINE_IID
+
+.trigger:
+  trigger:
+    project: dagora/crypto-for-all/crypto4all-infrastructure
+    strategy: depend
+  needs:
+    - job: build
+  variables:
+    TF_VAR_IMAGE_TAG: "$IMAGE_TAG"
+  rules:
+    - if: '$CI_COMMIT_REF_PROTECTED != "true"'
+      when: never
+    - if: "$CI_COMMIT_BRANCH == $DEV_BRANCH"
+      variables:
+        TG_ENVIRONMENT: dev
+    - if: "$CI_COMMIT_BRANCH == $PROD_BRANCH"
+      variables:
+        TG_ENVIRONMENT: prd
+      when: manual
+
+migration:
+  stage: migrate
+  extends: .trigger
+  variables:
+    TRIGGER_JOB: backend:migration
+
+deploy:
+  stage: deploy
+  extends: .trigger
+  variables:
+    TRIGGER_JOB: backend:deployment
