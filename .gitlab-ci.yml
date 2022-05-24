@@ -82,7 +82,8 @@ migration:
 deploy:
   stage: deploy
   extends: .trigger
-  dependencies:
-    - migration
+  needs:
+    - !reference [.trigger, needs]
+    - job: migration
   variables:
     TRIGGER_JOB: backend:deployment
