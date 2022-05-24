@@ -53,8 +53,6 @@ build:
         - Dockerfile
       when: manual
     - if: "$CI_COMMIT_REF_PROTECTED"
-      variables:
-        IMAGE_TAG: $CI_COMMIT_REF_SLUG-$CI_PIPELINE_IID
 
 .trigger:
   trigger:
