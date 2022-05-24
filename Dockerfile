@@ -8,7 +8,7 @@ COPY abi/ ./abi
 
 RUN yarn install --frozen-lockfile --non-interactive
 
-FROM deps as migration
+FROM node:16-alpine as migration
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 app
@@ -17,7 +17,11 @@ WORKDIR /app
 
 RUN apk add dumb-init
 
-COPY migrations ./
+COPY --from=deps --chown=app:nodejs /app/node_modules ./node_modules
+
+COPY --from=deps --chown=app:nodejs /app/schema.prisma /app/package.json /app/yarn.lock ./
+
+COPY migrations ./migrations
 
 USER app
 
