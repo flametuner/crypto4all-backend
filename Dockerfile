@@ -19,6 +19,8 @@ RUN apk add dumb-init
 
 COPY --from=deps /app ./
 
+COPY migrations ./
+
 USER app
 
 CMD ["dumb-init", "yarn", "migrate:prod"]
