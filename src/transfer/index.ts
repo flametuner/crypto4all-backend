@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-import ethers from "ethers";
+import { ethers } from "ethers";
 
 const PK_MUMBAI = process.env.PRIVATE_KEY_MUMBAI || "";
 
