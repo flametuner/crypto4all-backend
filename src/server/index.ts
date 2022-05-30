@@ -14,7 +14,7 @@ export type AppContext = {
 };
 
 async function main() {
-  const schema = fs.readFileSync(path.join(__dirname, "schema.graphql"));
+  const schema = fs.readFileSync("./schema.graphql");
   const typeDefs = gql`
     ${schema}
   `;

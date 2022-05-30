@@ -2,7 +2,7 @@ FROM node:16-alpine as deps
 
 WORKDIR /app
 
-COPY package.json yarn.lock schema.prisma ./
+COPY package.json yarn.lock schema.prisma schema.graphql codegen.yml ./
 
 COPY abi/ ./abi
 
@@ -37,8 +37,11 @@ WORKDIR /app
 RUN apk add dumb-init
 
 COPY --from=deps --chown=app:nodejs /app/node_modules ./node_modules
+COPY --from=deps --chown=app:nodejs /app/types ./types
 
 COPY . ./
+
+RUN yarn build
 
 USER app
 
