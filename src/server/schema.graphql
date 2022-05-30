@@ -9,31 +9,38 @@ input checkTwitterInput {
 input CreateCampaignInput {
   title: String!
   description: String!
-  content: String!
-  contentsToValidation: [String!]!
+  suggestion: String!
+  mandatoryContent: [String!]!
+  forbiddenContent: [String!]!
 }
 
 input UpdateCampaignInput {
   id: Int!
   title: String!
   description: String!
-  content: String
-  contentsToValidation: [String!]!
+  suggestion: String!
+  mandatoryContent: [String!]!
+  forbiddenContent: [String!]!
 }
 
 enum SorterEnum {
   desc
   asc
-} 
+}
 
 input ContainsFilterInput {
   contains: String!
+}
+
+input CreatorFilterInput {
+  id: Int!
 }
 
 input CampaignWhereInput {
   id: Int
   title: ContainsFilterInput
   published: Boolean
+  creator: CreatorFilterInput
 }
 
 input CampaignOrderByInput {
@@ -58,8 +65,8 @@ type Deposit {
   message: String
   post: Post
 
-  createdAt:  DateTime 
-  updatedAt:  DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Post {
@@ -70,52 +77,56 @@ type Post {
   author: User
   campaign: Campaign
 
-  createdAt:  DateTime 
-  updatedAt:  DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Campaign {
   id: Int
   title: String
   description: String
-  tokenName:   String
+  tokenName: String
   tokenSymbol: String
-  tokenAddress:  String
-  network:   String
+  tokenAddress: String
+  network: String
   blockchain: String
   valuePerShare: Float
   totalValue: Float
   quantity: Float
-  content: String
-  contentsToValidation: [String!]!
+  suggestion: String
+  mandatoryContent: [String!]!
+  forbiddenContent: [String!]!
   published: Boolean
   posts: [Post!]!
-  creator: User
+  creator: Creator
 
-  createdAt:  DateTime 
-  updatedAt:  DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type Creator {
+  id: Int!
+  walletAddress: String!
+  campaigns: [Campaign!]!
 }
 
 type User {
-  id: Int
-  userNameTwitter: String
-  email: String
+  id: Int!
+  twitterUsername: String
   posts: [Post!]!
-  campaigns: [Campaign!]!
 
-  createdAt:  DateTime 
-  updatedAt:  DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Query {
   healthCheck: String
-  authenticate(email: String, password: String): String
   campaigns(input: CampaignFilterInput): [Campaign!]!
 }
 
 type Mutation {
   checkTwitter(input: checkTwitterInput!): String
-  signup(email: String!, password: String!): String
+  login(signedMessage: String!): String
 
   createCampaign(input: CreateCampaignInput!): Campaign
   updateCampaign(input: UpdateCampaignInput!): Campaign

@@ -1,6 +1,8 @@
 require("dotenv").config();
 
-const ethers = require("ethers");
+import ethers from "ethers";
+
+const PK_MUMBAI = process.env.PRIVATE_KEY_MUMBAI || "";
 
 const provider = ethers.getDefaultProvider(process.env.API_URL_MUMBAI, {
   infura: {
@@ -9,9 +11,9 @@ const provider = ethers.getDefaultProvider(process.env.API_URL_MUMBAI, {
   },
 });
 
-const signer = new ethers.Wallet(process.env.PRIVATE_KEY_MUMBAI, provider);
+const signer = new ethers.Wallet(PK_MUMBAI, provider);
 
-const sendTransaction = async (address) => {
+export const sendTransaction = async (address: string) => {
   try {
     const transaction = await signer.sendTransaction({
       to: address,
@@ -19,7 +21,7 @@ const sendTransaction = async (address) => {
     });
     const hash = transaction.hash;
 
-    await transaction.wait([(confirms = 1)]);
+    await transaction.wait();
 
     console.log("🎉 The hash of your transaction is: ", hash);
 
@@ -31,8 +33,4 @@ const sendTransaction = async (address) => {
     );
     return false;
   }
-};
-
-module.exports = {
-  sendTransaction,
 };

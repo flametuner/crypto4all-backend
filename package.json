@@ -4,19 +4,22 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "generate-types": "typechain --target=ethers-v5 'abi/*.json'",
+    "generate-typechain": "typechain --target=ethers-v5 'abi/*.json'",
+    "generate-graphql": "graphql-codegen",
     "generate-prisma": "prisma generate",
-    "postinstall": "yarn generate-types && yarn generate-prisma",
+    "postinstall": "yarn generate-typechain && yarn generate-prisma && yarn generate-prisma",
     "start": "node src/server/index.js",
     "listener": "npx ts-node src/blockchain_listener/main.ts",
     "migrate:dev": "yarn prisma migrate dev",
     "migrate:prod": "yarn prisma migrate deploy"
   },
   "dependencies": {
-    "@prisma/client": "^3.4.0",
+    "@graphql-codegen/cli": "^2.6.2",
+    "@graphql-codegen/typescript": "^2.4.11",
+    "@graphql-codegen/typescript-resolvers": "^2.6.4",
+    "@prisma/client": "^3.14.0",
     "@types/node": "^16.11.6",
     "apollo-server": "^3.5.0",
-    "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",
     "ethers": "^5.5.1",
     "graphql": "^16.0.1",
@@ -27,7 +30,7 @@
   },
   "devDependencies": {
     "@typechain/ethers-v5": "^8.0.5",
-    "prisma": "^3.4.0",
+    "prisma": "^3.14.0",
     "typechain": "^6.0.5"
   }
 }

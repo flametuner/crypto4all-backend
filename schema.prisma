@@ -15,13 +15,13 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   url       String   @unique
-  content   String  @unique
+  content   String   @unique
 
-  deposit   Deposit?
-  author    User     @relation(fields: [authorId], references: [id])
-  campaign  Campaign @relation(fields: [campaignId], references: [id])
+  deposit  Deposit?
+  author   User     @relation(fields: [authorId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id])
 
-  authorId  Int
+  authorId   Int
   campaignId Int
 }
 
@@ -29,52 +29,55 @@ model Deposit {
   id         Int      @id @default(autoincrement())
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  token      String
-  network    String
-  address    String
-  blockchain String
+  token      String?
+  network    String?
+  address    String?
+  blockchain String?
   funded     Boolean  @default(false)
   message    String
-  value      Decimal
+  value      Decimal?
 
   post   Post @relation(fields: [postId], references: [id])
   postId Int  @unique
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  userNameTwitter String? @unique
+  id              Int      @id @default(autoincrement())
+  twitterUsername String?  @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  email String? @unique
-  password String?
-
-  posts     Post[]
-  campaigns Campaign[]
+  posts Post[]
 }
 
 model Campaign {
-  id        Int     @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  title     String   @unique
-  description String?
+  id               Int      @id @default(autoincrement())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  title            String   @unique
+  description      String?
   // deve ser setado pela listener do smart contract
-  tokenName   String?
-  tokenSymbol String?
+  tokenName        String?
+  tokenSymbol      String?
   tokenAddress     String?
-  network   String?
-  blockchain  String?  
-  valuePerShare Decimal?
-  totalValue  Int?
+  network          String?
+  blockchain       String?
+  valuePerShare    Decimal?
+  totalValue       Int?
   // deve ser setado pela listener do smart contract
-  contentsToValidation String[]
-  content   String
-  published Boolean? @default(true)
+  mandatoryContent String[]
+  forbiddenContent String[]
+  suggestion       String
+  published        Boolean? @default(true)
 
-  posts  Post[]
-  creator User @relation(fields: [creatorId], references: [id])
+  posts   Post[]
+  creator Creator   @relation(fields: [creatorId], references: [id])
 
   creatorId Int
+}
+
+model Creator {
+  id            Int        @id @default(autoincrement())
+  walletAddress String
+  campaigns     Campaign[]
 }
