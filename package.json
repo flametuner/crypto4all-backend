@@ -10,7 +10,7 @@
     "generate-prisma": "prisma generate",
     "generate": "yarn generate-typechain && yarn generate-prisma && yarn generate-graphql",
     "postinstall": "yarn generate",
-    "start": "node src/server/index.js",
+    "start": "node dist/src/server",
     "listener": "npx ts-node src/blockchain_listener/main.ts",
     "migrate:dev": "yarn prisma migrate dev",
     "migrate:prod": "yarn prisma migrate deploy"
