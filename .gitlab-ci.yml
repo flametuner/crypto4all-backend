@@ -20,13 +20,13 @@ build:
     - export CACHE_REPO=${CFA_REGISTRY}/cache
     - >-
       /kaniko/executor
-      --cache
       --cleanup
-      --cache-dir=/cache/app
-      --cache-copy-layers
       --skip-unused-stages
+      --cache
+      --cache-dir "/cache/app"
+      --cache-copy-layers
+      --cache-repo "${CACHE_REPO}"
       --target app
-      --cache-repo ${CAHCE_REPO}
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${CFA_REGISTRY}/backend:${CI_PIPELINE_IID}"
@@ -34,11 +34,11 @@ build:
       /kaniko/executor
       --cache
       --cleanup
-      --cache-dir /cache/migration
+      --cache-dir "/cache/migration"
       --cache-copy-layers
       --skip-unused-stages
       --target migration
-      --cache-repo ${CAHCE_REPO}
+      --cache-repo "${CACHE_REPO}"
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${CFA_REGISTRY}/migration:${CI_PIPELINE_IID}"
