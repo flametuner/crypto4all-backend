@@ -17,23 +17,28 @@ build:
     name: $ENV_NAME
     action: prepare
   script:
-    - export APPLICATION_REPO=${CFA_REGISTRY}/backend
+    - export CACHE_REPO=${CFA_REGISTRY}/cache
     - >-
       /kaniko/executor
       --cache
       --cleanup
+      --cache-dir /cache/app
+      --cache-copy-layers
       --skip-unused-stages
       --target app
+      --cache-repo ${CAHCE_REPO}
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${APPLICATION_REPO}:${CI_PIPELINE_IID}"
+      --destination "${CFA_REGISTRY}/backend:${CI_PIPELINE_IID}"
     - >-
       /kaniko/executor
       --cache
       --cleanup
+      --cache-dir /cache/migration
+      --cache-copy-layers
       --skip-unused-stages
       --target migration
-      --cache-repo ${APPLICATION_REPO}
+      --cache-repo ${CAHCE_REPO}
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${CFA_REGISTRY}/migration:${CI_PIPELINE_IID}"
