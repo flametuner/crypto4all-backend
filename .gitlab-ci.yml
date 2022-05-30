@@ -8,7 +8,7 @@ variables:
   DEV_BRANCH: dev
   PROD_BRANCH: main
 
-build:
+.build:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -23,25 +23,12 @@ build:
       --cleanup
       --skip-unused-stages
       --cache
-      --cache-dir "/cache/app"
       --cache-copy-layers
       --cache-repo "${CACHE_REPO}"
-      --target app
+      --target ${TARGET}
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${CFA_REGISTRY}/backend:${CI_PIPELINE_IID}"
-    - >-
-      /kaniko/executor
-      --cache
-      --cleanup
-      --cache-dir "/cache/migration"
-      --cache-copy-layers
-      --skip-unused-stages
-      --target migration
-      --cache-repo "${CACHE_REPO}"
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${CFA_REGISTRY}/migration:${CI_PIPELINE_IID}"
+      --destination "${CFA_REGISTRY}/${APP_NAME}:${CI_PIPELINE_IID}"
     - echo "IMAGE_TAG=$CI_PIPELINE_IID" >> build.env
   artifacts:
     reports:
@@ -62,12 +49,22 @@ build:
       when: manual
     - if: "$CI_COMMIT_REF_PROTECTED"
 
+build-app:
+  extends: .build
+  variables:
+    TARGET: app
+    APP_NAME: backend
+
+build-migration:
+  extends: .build
+  variables:
+    TARGET: migration
+    APP_NAME: migration
+
 .trigger:
   trigger:
     project: dagora/crypto-for-all/crypto4all-infrastructure
     strategy: depend
-  needs:
-    - job: build
   variables:
     TF_VAR_IMAGE_TAG: "$IMAGE_TAG"
   rules:
@@ -84,6 +81,8 @@ build:
 migration:
   stage: migrate
   extends: .trigger
+  needs:
+    - job: build-migration
   variables:
     TRIGGER_JOB: backend:migration
 
@@ -91,7 +90,7 @@ deploy:
   stage: deploy
   extends: .trigger
   needs:
-    - !reference [.trigger, needs]
+    - job: build-app
     - job: migration
   variables:
     TRIGGER_JOB: backend:deployment
