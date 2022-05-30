@@ -22,7 +22,7 @@ build:
       /kaniko/executor
       --cache
       --cleanup
-      --cache-dir /cache/app
+      --cache-dir "/cache/app"
       --cache-copy-layers
       --skip-unused-stages
       --target app
