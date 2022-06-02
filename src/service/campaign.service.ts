@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+import { sha256, toUtf8Bytes } from "ethers/lib/utils";
 import {
   CampaignFilterInput,
   MutationCreateCampaignArgs,
@@ -20,6 +22,7 @@ export const createCampaign = async (
   const campaign = await prisma.campaign.create({
     data: {
       ...args.input,
+      campaignHash: sha256(toUtf8Bytes(randomUUID())),
       creator: { connect: { id: user.id } },
     },
     include: { creator: true },
@@ -81,8 +84,9 @@ const getAllCampaigns = async (args: CampaignFilterInput) => {
       creator: {
         id: args.where?.creator?.id,
       },
-      published: args.where?.published,
-    }
+      published: true,
+      // published: args.where?.published || true,
+    },
   });
 };
 

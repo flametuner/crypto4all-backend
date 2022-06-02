@@ -1,29 +1,22 @@
-require("dotenv").config();
+import { sha256, toUtf8Bytes } from "ethers/lib/utils";
+import { BlockchainType, getContract } from "../contract";
 
-import { ethers } from "ethers";
-
-const PK_MUMBAI = process.env.PRIVATE_KEY_MUMBAI || "";
-
-const provider = ethers.getDefaultProvider(process.env.API_URL_MUMBAI, {
-  infura: {
-    projectId: process.env.INFURA_PROJECT_ID,
-    projectSecret: process.env.INFURA_PROJECT_SECRET,
-  },
-});
-
-const signer = new ethers.Wallet(PK_MUMBAI, provider);
-
-export const sendTransaction = async (address: string) => {
+export async function checkTweet(
+  campaignId: string,
+  address: string,
+  twitterUserId: string,
+  tweetId: string
+): Promise<boolean> {
+  const contract = getContract(BlockchainType.BNB_TESTNET);
+  const campaignIdHash = sha256(toUtf8Bytes(campaignId));
   try {
-    const transaction = await signer.sendTransaction({
-      to: address,
-      value: 500000,
-    });
-    const hash = transaction.hash;
-
-    await transaction.wait();
-
-    console.log("🎉 The hash of your transaction is: ", hash);
+    const tx = await contract.checkTweet(
+      campaignIdHash,
+      address,
+      twitterUserId,
+      tweetId
+    );
+    await tx.wait();
 
     return true;
   } catch (error) {
@@ -31,6 +24,6 @@ export const sendTransaction = async (address: string) => {
       "❗Something went wrong while submitting your transaction:",
       error
     );
-    return false;
   }
-};
+  return false;
+}

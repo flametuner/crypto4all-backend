@@ -1,5 +1,5 @@
 import { checkTwitterHandler } from "../handler";
-import { authenticate } from "../service/user.service";
+import { authenticate } from "../service/creator.service";
 import { Resolvers } from "../../types/resolvers-types";
 import { createCampaign, getCampaigns, updateCampaign } from "../service/campaign.service";
 
@@ -15,7 +15,7 @@ const resolvers: Resolvers = {
   },
   Mutation: {
     checkTwitter: (_, args, __) => checkTwitterHandler(args),
-    login: async (_, args, __) => await authenticate(args.signedMessage),
+    login: async (_, args, __) => await authenticate(args.signedMessage, args.signature),
     createCampaign: (_, args, context) =>
       createCampaign(args, context),
     updateCampaign: (_, args, context) =>
