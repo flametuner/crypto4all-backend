@@ -130,7 +130,7 @@ type Creator {
   campaigns: [Campaign!]!
 }
 
-type Signature {
+input Signature {
   r: String!
   s: String!
   v: Int!
