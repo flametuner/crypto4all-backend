@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { constants } from "ethers";
+import { BigNumber, constants } from "ethers";
 
 const nativeAddress = constants.AddressZero;
 const nativeDecimals = 18;
@@ -25,7 +25,7 @@ export async function populate(prisma: PrismaClient) {
       decimals: nativeDecimals,
       native: true,
       blockchainId: bnbTestnet.id,
-      totalSupply: BigInt("200000000000000000000000000"),
+      totalSupply: BigNumber.from("200000000000000000000000000").toString(),
     },
   });
 

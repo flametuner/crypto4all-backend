@@ -24,7 +24,7 @@ export function getContractAddress(blockchain: BlockchainType): string {
   return ADDRESSES[blockchain];
 }
 
-const bnbTestnetProvider = ethers.getDefaultProvider(config.RPC_URL);
+const bnbTestnetProvider = ethers.getDefaultProvider(config.BNB_TESTNET_RPC);
 const signer = new ethers.Wallet(config.PRIVATE_KEY, bnbTestnetProvider);
 
 const contracts = {

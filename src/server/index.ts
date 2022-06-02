@@ -1,9 +1,13 @@
 import { ApolloServer, gql } from "apollo-server";
 import resolvers from "./graphql";
 import fs from "fs";
-import path from "path";
-import { getCreatorFromToken, LoginInformation } from "../service/creator.service";
+import {
+  getCreatorFromToken,
+  LoginInformation,
+} from "../service/creator.service";
 import { config } from "../config";
+import { listenToEvents } from "../blockchain_listener/listener";
+import { BlockchainType } from "../contract";
 
 export type AppContext = {
   user: LoginInformation | undefined;
@@ -33,6 +37,7 @@ async function main() {
     .then(({ url }) => {
       console.log(`🚀  Server ready at ${url}`);
     });
+  listenToEvents(BlockchainType.BNB_TESTNET);
 }
 
 main();

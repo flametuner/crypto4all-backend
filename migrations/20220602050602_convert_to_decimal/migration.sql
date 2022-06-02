@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "CampaignDetails" ALTER COLUMN "valuePerShare" SET DATA TYPE DECIMAL(65,30),
+ALTER COLUMN "totalValue" SET DATA TYPE DECIMAL(65,30);
+
+-- AlterTable
+ALTER TABLE "Deposit" ALTER COLUMN "value" SET DATA TYPE DECIMAL(65,30);
+
+-- AlterTable
+ALTER TABLE "Token" ALTER COLUMN "totalSupply" SET DATA TYPE DECIMAL(65,30);
