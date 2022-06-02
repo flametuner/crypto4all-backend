@@ -1,16 +1,16 @@
 import { ApolloServer, gql } from "apollo-server";
 import resolvers from "./graphql";
 import fs from "fs";
-import path from "path";
-import { getUserFromToken } from "../service/user.service";
-import { JwtPayload } from "jsonwebtoken";
-
-export type User = {
-  id: number;
-}
+import {
+  getCreatorFromToken,
+  LoginInformation,
+} from "../service/creator.service";
+import { config } from "../config";
+import { listenToEvents } from "../blockchain_listener/listener";
+import { BlockchainType } from "../contract";
 
 export type AppContext = {
-  user: User | undefined;
+  user: LoginInformation | undefined;
 };
 
 async function main() {
@@ -24,7 +24,7 @@ async function main() {
     resolvers,
     context: ({ req }) => ({
       user: req?.headers?.authorization
-        ? getUserFromToken(req.headers.authorization)
+        ? getCreatorFromToken(req.headers.authorization)
         : undefined,
     }),
   });
@@ -32,11 +32,12 @@ async function main() {
   // The `listen` method launches a web server.
   server
     .listen({
-      port: process.env.PORT,
+      port: config.PORT,
     })
     .then(({ url }) => {
       console.log(`🚀  Server ready at ${url}`);
     });
+  listenToEvents(BlockchainType.BNB_TESTNET);
 }
 
 main();

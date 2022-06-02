@@ -10,32 +10,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Blockchain {
+  id          Int    @id @default(autoincrement())
+  name        String
+  chainId     Int    @unique
+  description String
+
+
+  nativeTokenId Int?   @unique
+  nativeToken   Token? @relation(fields: [nativeTokenId], references: [id])
+
+  tokens Token[] @relation(name: "tokenList")
+}
+
+model Token {
+  id           Int        @id @default(autoincrement())
+  address      String
+  name         String
+  symbol       String
+  decimals     Int
+  totalSupply  Decimal
+  native       Boolean
+  blockchainId Int
+  blockchain   Blockchain @relation(name: "tokenList", fields: [blockchainId], references: [id])
+
+  campaignDetails CampaignDetails[]
+  nativeTokenFor  Blockchain[]
+
+  @@unique([address, blockchainId])
+}
+
 model Post {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   url       String   @unique
-  content   String   @unique
+  tweetId   String   @unique
+  content   String
 
   deposit  Deposit?
-  author   User     @relation(fields: [authorId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
   campaign Campaign @relation(fields: [campaignId], references: [id])
 
-  authorId   Int
+  userId     Int
   campaignId Int
 }
 
 model Deposit {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  token      String?
-  network    String?
-  address    String?
-  blockchain String?
-  funded     Boolean  @default(false)
-  message    String
-  value      Decimal?
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  funded    Boolean  @default(false)
+  message   String?
+  address   String
+  value     Decimal
 
   post   Post @relation(fields: [postId], references: [id])
   postId Int  @unique
@@ -43,41 +71,47 @@ model Deposit {
 
 model User {
   id              Int      @id @default(autoincrement())
-  twitterUsername String?  @unique
+  twitterUsername String   @unique
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   posts Post[]
 }
 
+model CampaignDetails {
+  id            Int      @id @default(autoincrement())
+  campaignId    Int      @unique
+  campaign      Campaign @relation(fields: [campaignId], references: [id])
+  tokenId       Int
+  token         Token    @relation(fields: [tokenId], references: [id])
+  valuePerShare Decimal
+  totalValue    Decimal
+}
+
 model Campaign {
-  id               Int      @id @default(autoincrement())
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  title            String   @unique
-  description      String?
+  id           Int      @id @default(autoincrement())
+  campaignHash String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  title        String   @unique
+  description  String?
   // deve ser setado pela listener do smart contract
-  tokenName        String?
-  tokenSymbol      String?
-  tokenAddress     String?
-  network          String?
-  blockchain       String?
-  valuePerShare    Decimal?
-  totalValue       Int?
+
+  campaignDetail   CampaignDetails?
   // deve ser setado pela listener do smart contract
   mandatoryContent String[]
   forbiddenContent String[]
   suggestion       String
-  published        Boolean? @default(true)
+  published        Boolean          @default(true)
 
-  posts   Post[]
-  creator Creator   @relation(fields: [creatorId], references: [id])
+  posts Post[]
 
+  creator   Creator @relation(fields: [creatorId], references: [id])
   creatorId Int
 }
 
 model Creator {
   id            Int        @id @default(autoincrement())
-  walletAddress String
+  walletAddress String     @unique
   campaigns     Campaign[]
 }

@@ -1,6 +1,7 @@
 import { TwitterApi } from "twitter-api-v2";
+import { config } from "../config";
 
-const client = new TwitterApi(process.env.TWITTER_BEARER_TOKEN || "").v2
+const client = new TwitterApi(config.TWITTER_BEARER_TOKEN || "").v2
   .readOnly;
 
 const isValidTweet = (
@@ -44,12 +45,17 @@ export async function getTweetData(
 
   const success_dict: Record<string, { username: string; content: string }> =
     {};
-  const error_list = [];
+  const error_dict: Record<string, string> = {};
   if (errors) {
     console.log("Errors:", errors);
 
     for (let error of errors) {
-      error_list.push(error.value);
+      if (!error.value) continue;
+      let errorMessage = "There was an error processing your tweet";
+      if (error.reason) {
+        errorMessage = error.reason;
+      }
+      error_dict[error.value] = errorMessage;
     }
   }
   if (!includes)
@@ -70,9 +76,9 @@ export async function getTweetData(
           content: t.text,
         };
       } else {
-        error_list.push(t.id);
+        error_dict[t.id] = "Tweet content is not valid";
       }
     }
   }
-  return { success_dict, error_list };
+  return { success_dict, error_dict };
 }
