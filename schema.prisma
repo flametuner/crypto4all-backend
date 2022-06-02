@@ -29,7 +29,7 @@ model Token {
   name         String
   symbol       String
   decimals     Int
-  totalSupply  BigInt
+  totalSupply  Decimal
   native       Boolean
   blockchainId Int
   blockchain   Blockchain @relation(name: "tokenList", fields: [blockchainId], references: [id])
@@ -63,7 +63,7 @@ model Deposit {
   funded    Boolean  @default(false)
   message   String?
   address   String
-  value     BigInt
+  value     Decimal
 
   post   Post @relation(fields: [postId], references: [id])
   postId Int  @unique
@@ -84,8 +84,8 @@ model CampaignDetails {
   campaign      Campaign @relation(fields: [campaignId], references: [id])
   tokenId       Int
   token         Token    @relation(fields: [tokenId], references: [id])
-  valuePerShare BigInt
-  totalValue    BigInt
+  valuePerShare Decimal
+  totalValue    Decimal
 }
 
 model Campaign {
