@@ -97,7 +97,7 @@ model Campaign {
   description  String?
   // deve ser setado pela listener do smart contract
 
-  campaignDetail   CampaignDetails?
+  campaignDetails   CampaignDetails?
   // deve ser setado pela listener do smart contract
   mandatoryContent String[]
   forbiddenContent String[]
