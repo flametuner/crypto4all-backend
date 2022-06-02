@@ -49,7 +49,7 @@ export async function listenToEvents(type: BlockchainType) {
         await prisma.campaign.update({
           where: { campaignHash: campaignHash },
           data: {
-            campaignDetail: {
+            campaignDetails: {
               create: {
                 totalValue: totalValue.toString(),
                 valuePerShare: valuePerShare.toString(),
@@ -88,7 +88,7 @@ export async function listenToEvents(type: BlockchainType) {
       await prisma.campaign.update({
         where: { campaignHash: campaignHash },
         data: {
-          campaignDetail: {
+          campaignDetails: {
             update: {
               totalValue: {
                 increment: amount.toString(),
@@ -108,7 +108,7 @@ export async function listenToEvents(type: BlockchainType) {
       await prisma.campaign.update({
         where: { campaignHash: campaignHash },
         data: {
-          campaignDetail: {
+          campaignDetails: {
             update: {
               totalValue: {
                 decrement: amount.toString(),
@@ -158,7 +158,7 @@ export async function listenToEvents(type: BlockchainType) {
         await prisma.campaign.update({
           where: { campaignHash: campaignHash },
           data: {
-            campaignDetail: {
+            campaignDetails: {
               update: {
                 valuePerShare: valuePerShare.toString(),
               },
@@ -180,7 +180,7 @@ export async function listenToEvents(type: BlockchainType) {
         await prisma.campaign.update({
           where: { campaignHash: campaignHash },
           data: {
-            campaignDetail: {
+            campaignDetails: {
               update: {
                 valuePerShare: amount.toString(),
               },
