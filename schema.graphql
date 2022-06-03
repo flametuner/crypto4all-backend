@@ -1,4 +1,5 @@
 scalar DateTime
+scalar BigDecimal
 
 input checkTwitterInput {
   url: String!
@@ -56,28 +57,24 @@ input CampaignFilterInput {
 }
 
 type Blockchain {
-  id: Int!
+  id: ID!
   name: String!
   chainId: Int!
-  symbol: String!
-  tokens: [Token!]
 }
 
 type Token {
-  id: Int!
+  id: ID!
   address: String!
   name: String!
   symbol: String!
-  decimals: Int!
-  totalSupply: Int!
+  decimals: BigDecimal!
+  totalSupply: BigDecimal!
   blockchain: Blockchain!
   native: Boolean!
-  campaigns: [Campaign!]
-  deposits: [Deposit!]
 }
 
 type Deposit {
-  id: Int!
+  id: ID!
   token: Token!
   funded: Boolean!
   address: String!
@@ -89,7 +86,7 @@ type Deposit {
 }
 
 type Post {
-  id: Int!
+  id: ID!
   url: String!
   content: String!
   deposit: Deposit
@@ -102,31 +99,25 @@ type Post {
 }
 
 type Campaign {
-  id: Int!
+  id: ID!
   title: String!
   description: String
-  campaignDetails: CampaignDetails
   suggestion: String!
   mandatoryContent: [String!]!
   forbiddenContent: [String!]!
   published: Boolean!
-  posts: [Post!]!
   creator: Creator!
+  token: Token!
+  valuePerShare: BigDecimal!
+  totalValue: BigDecimal!
 
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
-type CampaignDetails {
-  token: Token!
-  valuePerShare: Float!
-  totalValue: Float!
-}
-
 type Creator {
-  id: Int!
+  id: ID!
   walletAddress: String!
-  campaigns: [Campaign!]!
 }
 
 input Signature {
@@ -136,7 +127,7 @@ input Signature {
 }
 
 type User {
-  id: Int!
+  id: ID!
   twitterUsername: String
   posts: [Post!]!
 

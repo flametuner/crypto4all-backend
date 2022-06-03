@@ -1,4 +1,4 @@
-import { Campaign, CampaignDetails } from "@prisma/client";
+import { Campaign } from "@prisma/client";
 import { MutationCheckTwitterArgs } from "../../types/resolvers-types";
 import prisma from "../prisma";
 import { checkTweet } from "../transfer";
@@ -14,7 +14,7 @@ async function saveWithdraw({
 }: Withdraw) {
   await prisma.deposit.create({
     data: {
-      value: campaign.campaignDetails.valuePerShare,
+      value: campaign.valuePerShare,
       message: "PAY PAY",
       address,
       post: {
@@ -43,13 +43,10 @@ export async function checkTwitterHandler({ input }: MutationCheckTwitterArgs) {
   );
   const campaign = await prisma.campaign.findUnique({
     where: { id: input.campaignId },
-    include: {
-      campaignDetails: true,
-    },
   });
   if (!campaign) return "Campaign not found!!!";
 
-  if (!campaign.campaignDetails) return "The payment details wasn't found!";
+  if (!campaign.tokenId) return "The payment details wasn't found!";
 
   const tweetId = input.url.split("/").slice(-1)[0];
   console.log("id", tweetId);
@@ -98,9 +95,7 @@ export async function checkTwitterHandler({ input }: MutationCheckTwitterArgs) {
     url: input.url,
     tweetId,
     isSendTransaction,
-    campaign: campaign as Campaign & {
-      campaignDetails: CampaignDetails;
-    },
+    campaign: campaign,
   });
   return "pay pay my friend";
 }
@@ -112,7 +107,5 @@ export type Withdraw = {
   url: string;
   tweetId: string;
   isSendTransaction: boolean;
-  campaign: Campaign & {
-    campaignDetails: CampaignDetails;
-  };
+  campaign: Campaign;
 };

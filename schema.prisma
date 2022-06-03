@@ -34,8 +34,8 @@ model Token {
   blockchainId Int
   blockchain   Blockchain @relation(name: "tokenList", fields: [blockchainId], references: [id])
 
-  campaignDetails CampaignDetails[]
-  nativeTokenFor  Blockchain[]
+  nativeTokenFor Blockchain[]
+  Campaign       Campaign[]
 
   @@unique([address, blockchainId])
 }
@@ -78,16 +78,6 @@ model User {
   posts Post[]
 }
 
-model CampaignDetails {
-  id            Int      @id @default(autoincrement())
-  campaignId    Int      @unique
-  campaign      Campaign @relation(fields: [campaignId], references: [id])
-  tokenId       Int
-  token         Token    @relation(fields: [tokenId], references: [id])
-  valuePerShare Decimal
-  totalValue    Decimal
-}
-
 model Campaign {
   id           Int      @id @default(autoincrement())
   campaignHash String   @unique
@@ -97,12 +87,15 @@ model Campaign {
   description  String?
   // deve ser setado pela listener do smart contract
 
-  campaignDetails   CampaignDetails?
+  tokenId          Int?
+  token            Token?   @relation(fields: [tokenId], references: [id])
+  valuePerShare    Decimal  @default(0)
+  totalValue       Decimal  @default(0)
   // deve ser setado pela listener do smart contract
   mandatoryContent String[]
   forbiddenContent String[]
   suggestion       String
-  published        Boolean          @default(true)
+  published        Boolean  @default(true)
 
   posts Post[]
 

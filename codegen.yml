@@ -12,6 +12,8 @@ generates:
         Post: "@prisma/client/index.d#Post"
         Creator: "@prisma/client/index.d#Creator"
         User: "@prisma/client/index.d#User"
+        Token: "@prisma/client/index.d#Token"
+        Blockchain: "@prisma/client/index.d#Blockchain"
       scalars:
         ID: number
         Date: Date

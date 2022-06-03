@@ -49,28 +49,24 @@ export async function listenToEvents(type: BlockchainType) {
         await prisma.campaign.update({
           where: { campaignHash: campaignHash },
           data: {
-            campaignDetails: {
-              create: {
-                totalValue: totalValue.toString(),
-                valuePerShare: valuePerShare.toString(),
-                token: {
-                  connectOrCreate: {
-                    where: {
-                      address_blockchainId: {
-                        address: tokenAddress,
-                        blockchainId: blockchain.id,
-                      },
-                    },
-                    create: {
-                      address: tokenAddress,
-                      decimals: decimals,
-                      name: symbol,
-                      symbol: symbol,
-                      totalSupply: totalSupply.toString(),
-                      blockchainId: blockchain.id,
-                      native: false,
-                    },
+            totalValue: totalValue.toString(),
+            valuePerShare: valuePerShare.toString(),
+            token: {
+              connectOrCreate: {
+                where: {
+                  address_blockchainId: {
+                    address: tokenAddress,
+                    blockchainId: blockchain.id,
                   },
+                },
+                create: {
+                  address: tokenAddress,
+                  decimals: decimals,
+                  name: symbol,
+                  symbol: symbol,
+                  totalSupply: totalSupply.toString(),
+                  blockchainId: blockchain.id,
+                  native: false,
                 },
               },
             },
@@ -88,12 +84,8 @@ export async function listenToEvents(type: BlockchainType) {
       await prisma.campaign.update({
         where: { campaignHash: campaignHash },
         data: {
-          campaignDetails: {
-            update: {
-              totalValue: {
-                increment: amount.toString(),
-              },
-            },
+          totalValue: {
+            increment: amount.toString(),
           },
         },
       });
@@ -108,12 +100,8 @@ export async function listenToEvents(type: BlockchainType) {
       await prisma.campaign.update({
         where: { campaignHash: campaignHash },
         data: {
-          campaignDetails: {
-            update: {
-              totalValue: {
-                decrement: amount.toString(),
-              },
-            },
+          totalValue: {
+            decrement: amount.toString(),
           },
         },
       });
@@ -158,11 +146,7 @@ export async function listenToEvents(type: BlockchainType) {
         await prisma.campaign.update({
           where: { campaignHash: campaignHash },
           data: {
-            campaignDetails: {
-              update: {
-                valuePerShare: valuePerShare.toString(),
-              },
-            },
+            valuePerShare: valuePerShare.toString(),
           },
         });
       } catch (e) {
@@ -177,16 +161,6 @@ export async function listenToEvents(type: BlockchainType) {
         `💰 User ${address} funded campaign ${campaignHash} with ${amount}`
       );
       try {
-        await prisma.campaign.update({
-          where: { campaignHash: campaignHash },
-          data: {
-            campaignDetails: {
-              update: {
-                valuePerShare: amount.toString(),
-              },
-            },
-          },
-        });
       } catch (e) {
         console.error(e);
       }

@@ -87,6 +87,10 @@ const getAllCampaigns = async (args: CampaignFilterInput) => {
       published: true,
       // published: args.where?.published || true,
     },
+    include: {
+      creator: true,
+      token: true,
+    },
   });
 };
 
