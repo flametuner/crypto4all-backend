@@ -13,14 +13,14 @@ datasource db {
 model Blockchain {
   id          Int    @id @default(autoincrement())
   name        String
-  chainId     Int    @unique
+  chainId     Int    @unique @map("chain_id")
   description String
 
 
-  nativeTokenId Int?   @unique
-  nativeToken   Token? @relation(fields: [nativeTokenId], references: [id])
+  nativeTokenId Int?   @unique @map("native_token_id")
+  nativeToken   Token? @relation(name: "native_token", fields: [nativeTokenId], references: [id])
 
-  tokens Token[] @relation(name: "tokenList")
+  tokens Token[] @relation(name: "token_list")
 }
 
 model Token {
@@ -29,12 +29,12 @@ model Token {
   name         String
   symbol       String
   decimals     Int
-  totalSupply  Decimal
+  totalSupply  Decimal    @map("total_supply")
   native       Boolean
-  blockchainId Int
-  blockchain   Blockchain @relation(name: "tokenList", fields: [blockchainId], references: [id])
+  blockchainId Int        @map("blockchain_id")
+  blockchain   Blockchain @relation(name: "token_list", fields: [blockchainId], references: [id])
 
-  nativeTokenFor Blockchain[]
+  nativeTokenFor Blockchain[] @relation(name: "native_token")
   Campaign       Campaign[]
 
   @@unique([address, blockchainId])
@@ -42,69 +42,69 @@ model Token {
 
 model Post {
   id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
   url       String   @unique
-  tweetId   String   @unique
+  tweetId   String   @unique @map("tweet_id")
   content   String
 
   deposit  Deposit?
   user     User     @relation(fields: [userId], references: [id])
   campaign Campaign @relation(fields: [campaignId], references: [id])
 
-  userId     Int
-  campaignId Int
+  userId     Int @map("user_id")
+  campaignId Int @map("campaign_id")
 }
 
 model Deposit {
   id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
   funded    Boolean  @default(false)
   message   String?
   address   String
   value     Decimal
 
   post   Post @relation(fields: [postId], references: [id])
-  postId Int  @unique
+  postId Int  @unique @map("post_id")
 }
 
 model User {
   id              Int      @id @default(autoincrement())
-  twitterUsername String   @unique
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  twitterUsername String   @unique @map("twitter_username")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   posts Post[]
 }
 
 model Campaign {
   id           Int      @id @default(autoincrement())
-  campaignHash String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  campaignHash String   @unique @map("campaign_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
   title        String   @unique
   description  String?
   // deve ser setado pela listener do smart contract
 
-  tokenId          Int?
+  tokenId          Int?     @map("token_id")
   token            Token?   @relation(fields: [tokenId], references: [id])
-  valuePerShare    Decimal  @default(0)
-  totalValue       Decimal  @default(0)
+  valuePerShare    Decimal  @default(0) @map("value_per_share")
+  totalValue       Decimal  @default(0) @map("total_value")
   // deve ser setado pela listener do smart contract
-  mandatoryContent String[]
-  forbiddenContent String[]
+  mandatoryContent String[] @map("mandatory_content")
+  forbiddenContent String[] @map("forbidden_content")
   suggestion       String
   published        Boolean  @default(true)
 
   posts Post[]
 
   creator   Creator @relation(fields: [creatorId], references: [id])
-  creatorId Int
+  creatorId Int     @map("creator_id")
 }
 
 model Creator {
   id            Int        @id @default(autoincrement())
-  walletAddress String     @unique
+  walletAddress String     @unique @map("wallet_address")
   campaigns     Campaign[]
 }
