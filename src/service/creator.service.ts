@@ -1,3 +1,5 @@
+import { Creator } from "@prisma/client";
+import { randomUUID } from "crypto";
 import { ethers } from "ethers";
 import jwt from "jsonwebtoken";
 import { config } from "../config";
@@ -27,23 +29,48 @@ export async function authenticate(
   signedMessage: string,
   signature: Sig
 ): Promise<string> {
+  const nonce = signedMessage.split("nonce: ")[1];
+
+  if (!nonce) throw new Error("nonce not found");
+
   const address = ethers.utils.verifyMessage(signedMessage, signature);
 
   if (!address) throw new Error("Invalid signature");
 
-  const { id } = await prisma.creator.upsert({
+  const { id } = await prisma.creator.update({
     where: {
       walletAddress: address,
+      nonce: nonce,
     },
-    create: {
-      walletAddress: address,
+    data: {
+      nonce: randomUUID(),
     },
-    update: {},
     select: {
       id: true,
     },
   });
   return generateJwtToken(id, address);
+}
+
+export async function register(args: { address: string }): Promise<Creator> {
+  const { address } = args;
+  return await prisma.creator.create({
+    data: {
+      walletAddress: address,
+      nonce: randomUUID(),
+    },
+  });
+}
+
+export async function getCreator(args: { address: string }): Promise<Creator> {
+  const { address } = args;
+  const creator = await prisma.creator.findUnique({
+    where: {
+      walletAddress: address,
+    },
+  });
+  if (!creator) throw new Error("Creator not found");
+  return creator;
 }
 
 export function getCreatorFromToken(

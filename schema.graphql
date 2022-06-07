@@ -119,6 +119,7 @@ type Campaign {
 type Creator {
   id: ID!
   walletAddress: String!
+  nonce: String!
 }
 
 input Signature {
@@ -139,10 +140,13 @@ type User {
 type Query {
   healthCheck: String!
   campaigns(input: CampaignFilterInput): [Campaign!]!
+  creator(address: String!): Creator!
 }
 
 type Mutation {
   checkTwitter(input: checkTwitterInput!): String
+
+  register(address: String!): Creator!
   login(signedMessage: String!, signature: Signature!): String!
 
   createCampaign(input: CreateCampaignInput!): Campaign!
