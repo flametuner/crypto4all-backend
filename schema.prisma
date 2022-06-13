@@ -106,7 +106,7 @@ model Campaign {
 model Creator {
   id            Int        @id @default(autoincrement())
   walletAddress String     @unique @map("wallet_address")
-  nonce         String     @unique
+  nonce         String
   campaigns     Campaign[]
 
   createdAt DateTime @default(now()) @map("created_at")

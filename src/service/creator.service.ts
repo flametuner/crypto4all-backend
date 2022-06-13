@@ -37,10 +37,13 @@ export async function authenticate(
 
   if (!address) throw new Error("Invalid signature");
 
+  const {nonce: n2} = await getCreator({ address });
+
+  if (n2 !== nonce) throw new Error("Invalid nonce");
+
   const { id } = await prisma.creator.update({
     where: {
       walletAddress: address,
-      nonce: nonce,
     },
     data: {
       nonce: randomUUID(),
