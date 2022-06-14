@@ -25,7 +25,7 @@ export const createCampaign = async (
       campaignHash: sha256(toUtf8Bytes(randomUUID())),
       creator: { connect: { id: user.id } },
     },
-    include: { creator: true },
+    include: { creator: true, token: true },
   });
   return campaign;
 };
