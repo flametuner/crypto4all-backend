@@ -95,7 +95,7 @@ model Campaign {
   mandatoryContent String[] @map("mandatory_content")
   forbiddenContent String[] @map("forbidden_content")
   suggestion       String
-  published        Boolean  @default(true)
+  published        Boolean  @default(false)
 
   posts Post[]
 

@@ -108,9 +108,9 @@ type Campaign {
   forbiddenContent: [String!]!
   published: Boolean!
   creator: Creator!
-  token: Token!
-  valuePerShare: BigDecimal!
-  totalValue: BigDecimal!
+  token: Token
+  valuePerShare: BigDecimal
+  totalValue: BigDecimal
 
   createdAt: DateTime!
   updatedAt: DateTime!
