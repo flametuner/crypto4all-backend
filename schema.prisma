@@ -83,7 +83,7 @@ model Campaign {
   campaignHash String   @unique @map("campaign_hash")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
-  title        String   @unique
+  title        String
   description  String?
   // deve ser setado pela listener do smart contract
 
