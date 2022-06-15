@@ -6,7 +6,7 @@ import {
   LoginInformation,
 } from "../service/creator.service";
 import { config } from "../config";
-import { listenToEvents } from "../blockchain_listener/listener";
+import { setupCron } from "../blockchain_listener/listener";
 import { BlockchainType } from "../contract";
 
 export type AppContext = {
@@ -37,7 +37,7 @@ async function main() {
     .then(({ url }) => {
       console.log(`🚀  Server ready at ${url}`);
     });
-  listenToEvents(BlockchainType.BNB_TESTNET);
+    setupCron(BlockchainType.BNB_TESTNET);
 }
 
 main();

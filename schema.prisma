@@ -10,6 +10,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model EventState {
+  id Int @id @default(autoincrement())
+
+  blockchainId Int        @unique
+  blockchain   Blockchain @relation(fields: [blockchainId], references: [id])
+
+  latestCreatedBlock              Int @default(0) @map("latest_created_block")
+  latestPausedBlock               Int @default(0) @map("latest_paused_block")
+  latestFundedBlock               Int @default(0) @map("latest_funded_block")
+  latestResumedBlock              Int @default(0) @map("latest_resumed_block")
+  latestValuePerShareUpdatedBlock Int @default(0) @map("latest_value_per_share_updated_block")
+  latestWithdrawnBlock            Int @default(0) @map("latest_withdrawn_block")
+  latestUserFundedBlock           Int @default(0) @map("latest_user_funded_block")
+}
+
 model Blockchain {
   id          Int    @id @default(autoincrement())
   name        String
@@ -20,7 +35,8 @@ model Blockchain {
   nativeTokenId Int?   @unique @map("native_token_id")
   nativeToken   Token? @relation(name: "native_token", fields: [nativeTokenId], references: [id])
 
-  tokens Token[] @relation(name: "token_list")
+  tokens     Token[]      @relation(name: "token_list")
+  EventState EventState[]
 }
 
 model Token {

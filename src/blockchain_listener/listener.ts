@@ -1,12 +1,13 @@
 import { BigNumber, constants, ethers } from "ethers";
+import { schedule } from "node-cron";
 import {
   Crypto4All__factory,
-  ERC20__factory,
+  ERC20__factory
 } from "../../types/ethers-contracts";
 import { BlockchainType, getContractAddress, getRPC } from "../contract";
 import prisma from "../prisma";
 
-export async function listenToEvents(type: BlockchainType) {
+export async function setupCron(type: BlockchainType) {
   const contract = getContractAddress(type);
   const rpc = getRPC(type);
   console.log(`Listening to events for ${contract} on ${rpc}`);
@@ -14,6 +15,7 @@ export async function listenToEvents(type: BlockchainType) {
     where: { chainId: 97 },
     include: { nativeToken: true },
   });
+
   if (!blockchain) throw new Error("Blockchain not found");
   if (!blockchain.nativeToken) throw new Error("Native token not found");
   const provider = ethers.getDefaultProvider(rpc);
@@ -29,141 +31,268 @@ export async function listenToEvents(type: BlockchainType) {
   const campaignWithdrawnFilter = crypto4All.filters.CampaignWithdrawn();
   const userFundedFilter = crypto4All.filters.UserFunded();
 
-  crypto4All.on(
-    campaignCreatedFilter,
-    async (campaignHash, tokenAddress, valuePerShare, totalValue) => {
-      console.log(
-        `💰 Campaign ${campaignHash} created with token ${tokenAddress} and valuePerShare ${valuePerShare} and totalValue ${totalValue}`
-      );
+  const thread = async () => {
+    const latestBlock = await provider.getBlockNumber();
 
-      try {
-        let decimals = 18;
-        let totalSupply = BigNumber.from(0);
-        let symbol = "TEST";
-        if (tokenAddress != constants.AddressZero) {
-          const token = ERC20__factory.connect(tokenAddress, provider);
-          decimals = await token.decimals();
-          totalSupply = await token.totalSupply();
-          symbol = await token.symbol();
-        }
-        await prisma.campaign.update({
-          where: { campaignHash: campaignHash },
-          data: {
-            totalValue: totalValue.toString(),
-            valuePerShare: valuePerShare.toString(),
-            token: {
-              connectOrCreate: {
-                where: {
-                  address_blockchainId: {
+    const {
+      latestCreatedBlock,
+      latestFundedBlock,
+      latestPausedBlock,
+      latestResumedBlock,
+      latestUserFundedBlock,
+      latestValuePerShareUpdatedBlock,
+      latestWithdrawnBlock,
+    } = await prisma.eventState.upsert({
+      where: {
+        blockchainId: blockchain.id,
+      },
+      update: {},
+      create: {
+        blockchainId: blockchain.id,
+      },
+    });
+
+    const campaignCreatedEvents = await crypto4All.queryFilter(
+      campaignCreatedFilter,
+      latestCreatedBlock
+    );
+
+    campaignCreatedEvents.forEach(
+      async ({
+        args: { campaignId, tokenAddress, valuePerShare, totalValue },
+      }) => {
+        console.log(
+          `💰 Campaign ${campaignId} created with token ${tokenAddress} and valuePerShare ${valuePerShare} and totalValue ${totalValue}`
+        );
+
+        try {
+          let decimals = 18;
+          let totalSupply = BigNumber.from(0);
+          let symbol = "TEST";
+          if (tokenAddress != constants.AddressZero) {
+            const token = ERC20__factory.connect(tokenAddress, provider);
+            decimals = await token.decimals();
+            totalSupply = await token.totalSupply();
+            symbol = await token.symbol();
+          }
+          await prisma.campaign.update({
+            where: { campaignHash: campaignId },
+            data: {
+              totalValue: totalValue.toString(),
+              valuePerShare: valuePerShare.toString(),
+              published: true,
+              token: {
+                connectOrCreate: {
+                  where: {
+                    address_blockchainId: {
+                      address: tokenAddress,
+                      blockchainId: blockchain.id,
+                    },
+                  },
+                  create: {
                     address: tokenAddress,
+                    decimals: decimals,
+                    name: symbol,
+                    symbol: symbol,
+                    totalSupply: totalSupply.toString(),
                     blockchainId: blockchain.id,
+                    native: false,
                   },
                 },
-                create: {
-                  address: tokenAddress,
-                  decimals: decimals,
-                  name: symbol,
-                  symbol: symbol,
-                  totalSupply: totalSupply.toString(),
-                  blockchainId: blockchain.id,
-                  native: false,
-                },
               },
+            },
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    );
+
+    await prisma.eventState.update({
+      where: {
+        blockchainId: blockchain.id,
+      },
+      data: {
+        latestCreatedBlock: latestBlock,
+      },
+    });
+
+    const campaingFundedEvents = await crypto4All.queryFilter(
+      campaingFundedFilter,
+      latestFundedBlock
+    );
+
+    campaingFundedEvents.forEach(async ({ args: { campaignId, amount } }) => {
+      console.log(`💰 Campaign ${campaignId} funded with ${amount}`);
+      try {
+        await prisma.campaign.update({
+          where: { campaignHash: campaignId },
+          data: {
+            totalValue: {
+              increment: amount.toString(),
             },
           },
         });
       } catch (e) {
         console.error(e);
       }
-    }
-  );
+    });
 
-  crypto4All.on(campaingFundedFilter, async (campaignHash, amount) => {
-    console.log(`💰 Campaign ${campaignHash} funded with ${amount}`);
-    try {
-      await prisma.campaign.update({
-        where: { campaignHash: campaignHash },
-        data: {
-          totalValue: {
-            increment: amount.toString(),
-          },
-        },
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  });
+    await prisma.eventState.update({
+      where: {
+        blockchainId: blockchain.id,
+      },
+      data: {
+        latestFundedBlock: latestBlock,
+      },
+    });
 
-  crypto4All.on(campaignWithdrawnFilter, async (campaignHash, amount) => {
-    console.log(`💰 Campaign ${campaignHash} withdrawn with ${amount}`);
-    try {
-      await prisma.campaign.update({
-        where: { campaignHash: campaignHash },
-        data: {
-          totalValue: {
-            decrement: amount.toString(),
-          },
-        },
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  });
-  crypto4All.on(campaignPausedFilter, async (campaignHash) => {
-    console.log(`💰 Campaign ${campaignHash} paused`);
+    const campaignWithdrawnEvents = await crypto4All.queryFilter(
+      campaignWithdrawnFilter,
+      latestWithdrawnBlock
+    );
 
-    try {
-      await prisma.campaign.update({
-        where: { campaignHash: campaignHash },
-        data: {
-          published: false,
-        },
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  });
-  crypto4All.on(campaignResumedFilter, async (campaignHash) => {
-    console.log(`💰 Campaign ${campaignHash} resumed`);
-    try {
-      await prisma.campaign.update({
-        where: { campaignHash: campaignHash },
-        data: {
-          published: true,
-        },
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  });
-  crypto4All.on(
-    campaignValuePerShareUpdatedFilter,
-    async (campaignHash, valuePerShare) => {
-      console.log(
-        `💰 Campaign ${campaignHash} valuePerShare updated with ${valuePerShare}`
-      );
+    campaignWithdrawnEvents.forEach(
+      async ({ args: { campaignId, amount } }) => {
+        console.log(`💰 Campaign ${campaignId} withdrawn with ${amount}`);
+        try {
+          await prisma.campaign.update({
+            where: { campaignHash: campaignId },
+            data: {
+              totalValue: {
+                decrement: amount.toString(),
+              },
+            },
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    );
+
+    await prisma.eventState.update({
+      where: {
+        blockchainId: blockchain.id,
+      },
+      data: {
+        latestWithdrawnBlock: latestBlock,
+      },
+    });
+
+    const campaignPausedEvents = await crypto4All.queryFilter(
+      campaignPausedFilter,
+      latestPausedBlock
+    );
+
+    campaignPausedEvents.forEach(async ({ args: { campaignId } }) => {
+      console.log(`💰 Campaign ${campaignId} paused`);
+
       try {
         await prisma.campaign.update({
-          where: { campaignHash: campaignHash },
+          where: { campaignHash: campaignId },
           data: {
-            valuePerShare: valuePerShare.toString(),
+            published: false,
           },
         });
       } catch (e) {
         console.error(e);
       }
-    }
-  );
-  crypto4All.on(
-    userFundedFilter,
-    async (campaignHash, address, _userId, _tweetId, amount) => {
-      console.log(
-        `💰 User ${address} funded campaign ${campaignHash} with ${amount}`
-      );
+    });
+
+    await prisma.eventState.update({
+      where: {
+        blockchainId: blockchain.id,
+      },
+      data: {
+        latestPausedBlock: latestBlock,
+      },
+    });
+
+    const campaignResumedEvents = await crypto4All.queryFilter(
+      campaignResumedFilter,
+      latestResumedBlock
+    );
+
+    campaignResumedEvents.forEach(async ({ args: { campaignId } }) => {
+      console.log(`💰 Campaign ${campaignId} resumed`);
       try {
+        await prisma.campaign.update({
+          where: { campaignHash: campaignId },
+          data: {
+            published: true,
+          },
+        });
       } catch (e) {
         console.error(e);
       }
-    }
-  );
+    });
+
+    await prisma.eventState.update({
+      where: {
+        blockchainId: blockchain.id,
+      },
+      data: {
+        latestResumedBlock: latestBlock,
+      },
+    });
+
+    const campaignValuePerShareUpdatedEvents = await crypto4All.queryFilter(
+      campaignValuePerShareUpdatedFilter,
+      latestValuePerShareUpdatedBlock
+    );
+
+    campaignValuePerShareUpdatedEvents.forEach(
+      async ({ args: { campaignId, valuePerShare } }) => {
+        console.log(
+          `💰 Campaign ${campaignId} valuePerShare updated with ${valuePerShare}`
+        );
+        try {
+          await prisma.campaign.update({
+            where: { campaignHash: campaignId },
+            data: {
+              valuePerShare: valuePerShare.toString(),
+            },
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    );
+
+    await prisma.eventState.update({
+      where: {
+        blockchainId: blockchain.id,
+      },
+      data: {
+        latestValuePerShareUpdatedBlock: latestBlock,
+      },
+    });
+
+    const campaignUserFundedEvents = await crypto4All.queryFilter(
+      userFundedFilter,
+      latestUserFundedBlock
+    );
+
+    campaignUserFundedEvents.forEach(
+      async ({ args: { campaignId, user, tweetUrl, amount } }) => {
+        console.log(
+          `💰 User ${user} funded campaign ${campaignId} with ${amount}`
+        );
+        try {
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    );
+    await prisma.eventState.update({
+      where: {
+        blockchainId: blockchain.id,
+      },
+      data: {
+        latestUserFundedBlock: latestBlock,
+      },
+    });
+  };
+
+  schedule("*/15 * * * * *", thread);
 }
