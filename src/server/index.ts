@@ -37,7 +37,7 @@ async function main() {
     .then(({ url }) => {
       console.log(`🚀  Server ready at ${url}`);
     });
-    setupCron(BlockchainType.BNB_TESTNET);
+  setupCron(BlockchainType.BNB_TESTNET);
 }
 
 main();

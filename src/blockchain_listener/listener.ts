@@ -16,8 +16,21 @@ export async function setupCron(type: BlockchainType) {
     include: { nativeToken: true },
   });
 
+  
+
   if (!blockchain) throw new Error("Blockchain not found");
   if (!blockchain.nativeToken) throw new Error("Native token not found");
+
+  await prisma.eventState.upsert({
+    where: {
+      blockchainId: blockchain.id,
+    },
+    update: {},
+    create: {
+      blockchainId: blockchain.id,
+    },
+  });
+
   const provider = ethers.getDefaultProvider(rpc);
 
   const crypto4All = Crypto4All__factory.connect(contract, provider);
@@ -32,7 +45,7 @@ export async function setupCron(type: BlockchainType) {
   const userFundedFilter = crypto4All.filters.UserFunded();
 
   const thread = async () => {
-    const latestBlock = await provider.getBlockNumber();
+    
 
     const {
       latestCreatedBlock,
@@ -42,15 +55,14 @@ export async function setupCron(type: BlockchainType) {
       latestUserFundedBlock,
       latestValuePerShareUpdatedBlock,
       latestWithdrawnBlock,
-    } = await prisma.eventState.upsert({
+    } = await prisma.eventState.findUnique({
       where: {
         blockchainId: blockchain.id,
       },
-      update: {},
-      create: {
-        blockchainId: blockchain.id,
-      },
+      rejectOnNotFound: true
     });
+
+    const latestBlock = await provider.getBlockNumber();
 
     const campaignCreatedThread = async () => {
       try {
@@ -274,7 +286,7 @@ export async function setupCron(type: BlockchainType) {
         campaignUserFundedEvents.forEach(
           async ({ args: { campaignId, user, tweetUrl, amount } }) => {
             console.log(
-              `💰 User ${user} funded campaign ${campaignId} with ${amount}`
+              `💰 User ${user} tweeted ${tweetUrl} and was funded in campaign ${campaignId} with ${amount}`
             );
             try {
             } catch (e) {
@@ -306,6 +318,7 @@ export async function setupCron(type: BlockchainType) {
       campaignValuePerShareUpdatedThread(),
       campaignUserFundedThread(),
     ]);
+
 
     await prisma.eventState.update({
       where: {

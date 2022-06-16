@@ -1,29 +1,26 @@
-import { sha256, toUtf8Bytes } from "ethers/lib/utils";
 import { BlockchainType, getContract } from "../contract";
 
 export async function checkTweet(
-  campaignId: string,
+  campaignHash: string,
   address: string,
   twitterUserId: string,
   tweetId: string
-): Promise<boolean> {
+): Promise<string | undefined> {
   const contract = getContract(BlockchainType.BNB_TESTNET);
-  const campaignIdHash = sha256(toUtf8Bytes(campaignId));
   try {
+    console.log(`Checking tweet ${tweetId} for campaign ${campaignHash}`);
     const tx = await contract.checkTweet(
-      campaignIdHash,
+      campaignHash,
       address,
       twitterUserId,
       tweetId
     );
-    await tx.wait();
 
-    return true;
+    return tx.hash;
   } catch (error) {
     console.log(
       "❗Something went wrong while submitting your transaction:",
       error
     );
   }
-  return false;
 }
